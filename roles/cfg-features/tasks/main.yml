@@ -1,0 +1,4 @@
+---
+- name: enable features needed
+  include_tasks: "{{ansible_network_os}}.yml"
+

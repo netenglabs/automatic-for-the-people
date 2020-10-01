@@ -1,0 +1,73 @@
+---
+- name: Configure NVE interface
+  connection: network_cli
+  cli_config:
+    config: |
+      interface nve1
+        no shutdown
+        host-reachability protocol bgp
+        source-interface loopback0
+  when: inventory_hostname in groups['leaf']
+  tags: vxlan
+
+- name: configure anycast gateway
+  connection: network_cli
+  cli_config:
+    config: |
+      fabric forwarding anycast-gateway-mac {{ anycast_gw_mac }}
+  when: inventory_hostname in groups['leaf']
+  tags: vxlan
+
+- name: Reconfigure access-list for arp suppression
+  connection: network_cli
+  cli_config:
+    config: |
+      hardware access-list tcam region vpc-convergence 0
+      hardware access-list tcam region arp-ether 256
+  tags: vxlan
+
+- name: configure l2 vni segments with mcast
+  connection: network_cli
+  cli_config: 
+    config: |
+     vlan {{ item.id }}
+       vn-segment {{ item.vnid }}
+
+     interface nve1
+       !
+       member vni {{ item.vnid }}
+         suppress-arp
+         mcast-group {{ item.mcast_grp }}
+
+     evpn
+       vni {{ item.vnid }} l2
+         rd auto
+         route-target import auto
+         route-target export auto
+
+  with_items: "{{ l2_networks }}"
+  when: inventory_hostname in groups['leaf'] and replication == 'mcast'
+  tags: vxlan
+
+- name: configure l2 vni segments with ingress replication
+  connection: network_cli
+  cli_config: 
+    config: |
+     vlan {{ item.id }}
+       vn-segment {{ item.vnid }}
+
+     interface nve1
+       !
+       member vni {{ item.vnid }}
+         suppress-arp
+         ingress-replication protocol bgp
+
+     evpn
+       vni {{ item.vnid }} l2
+         rd auto
+         route-target import auto
+         route-target export auto
+
+  with_items: "{{ l2_networks }}"
+  when: inventory_hostname in groups['leaf'] and replication != 'mcast'
+  tags: vxlan

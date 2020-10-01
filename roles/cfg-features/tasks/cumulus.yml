@@ -1,0 +1,10 @@
+---
+- name: Enable OSPF/BGP in FRR
+  become: yes
+  copy: src=daemons dest=/etc/frr/
+
+- name: Restart FRR
+  become: yes
+  service:
+    name=frr
+    state=restarted

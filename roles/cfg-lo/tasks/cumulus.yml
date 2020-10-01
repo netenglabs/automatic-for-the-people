@@ -1,0 +1,12 @@
+---
+- name: Configure the loopback with IP addr
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto lo
+      iface lo inet loopback
+         address {{ loopback_ip }}
+    marker: "# {mark} lo"
+
+  tags: cfglo

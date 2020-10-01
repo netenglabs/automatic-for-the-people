@@ -1,0 +1,14 @@
+- name: Configure ISL ports
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ item }}
+         no switchport
+         no shut
+         medium p2p
+         ip unnumbered loopback0
+         ip router ospf UNDERLAY area 0.0.0.0
+         mtu 9200
+  with_items: "{{ isl_ports }}"
+  tags: ospf-isl-cfg
+

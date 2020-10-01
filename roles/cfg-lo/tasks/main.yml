@@ -1,0 +1,4 @@
+---
+- name: set hostname
+  include_tasks: "{{ansible_network_os}}.yml"
+

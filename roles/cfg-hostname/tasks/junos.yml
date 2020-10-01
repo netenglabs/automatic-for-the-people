@@ -1,0 +1,7 @@
+---
+- name: Set hostname
+  connection: network_cli
+  cli_config:
+    config: |
+      set system host-name {{ inventory_hostname }}
+    commit: yes

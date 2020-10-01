@@ -1,0 +1,59 @@
+---
+- name: Configure server-facing ports
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ item.iface }}
+      iface {{ item.iface }}
+         mtu 9100
+         bridge-access {{ item.vlanid }}
+    marker: "# {mark} l2port-{{ item.iface }}"
+  with_items: "{{ l2_ports }}"
+  tags: ifcfg
+
+- name: Configure bridge
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto bridge
+      iface bridge
+        bridge-vlan-aware yes
+        bridge-ports {{ l2_ports | json_query('[*].iface') | join(' ') }}
+        bridge-vids {{ l2_ports | json_query('[*].vlanid') | join(' ') }}
+    marker: '# {mark} bridge'
+  tags: ifcfg
+
+- name: Configure VRF
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ item.vrf }}
+      iface {{ item.vrf }}
+        vrf-table auto
+    marker: "# {mark} vrf-{item.vrf}"
+  with_items: "{{ l2_networks }}"
+  tags: ifcfg  
+
+- name: Configure SVI
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ item.vlanif }}
+      iface {{ item.vlanif }}
+        mtu 9000
+        address {{ item.ip_address }}
+        vrf {{ item.vrf }}
+        vlan-id {{ item.id }}
+        vlan-raw-device bridge
+    marker: "# {mark} SVI-{{ item.vlanif }}"
+  with_items: "{{ l2_networks }}"
+  tags: ifcfg
+
+- name: ifup the interfaces
+  become: yes
+  command: ifup -a
+  tags: ifcfg      

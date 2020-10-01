@@ -1,0 +1,10 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth1:
+      dhcp4: false
+      addresses: [ {{ server_ip }} ]
+      routes:
+        - to: 172.16.0.0/16
+          via: {{ gateway }}

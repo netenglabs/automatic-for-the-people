@@ -1,0 +1,19 @@
+loopback_ip: 10.0.0.31/32
+
+l2_networks:
+  - id: 10
+    vnid: 100010
+    vlanif: Vlan10
+    ip_address: 172.16.1.254/24
+    mcast_grp: 224.1.1.192
+    ip_subnet: 172.16.2.0/24
+    vrf: EVPN
+
+  - id: 30
+    vnid: 100030
+    vlanif: Vlan30
+    ip_address: 172.16.3.254/24
+    mcast_grp: 224.1.1.192
+    ip_subnet: 172.16.3.0/24    
+    vrf: EVPN
+    

@@ -1,0 +1,53 @@
+---
+- name: iBGP base config
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+         log-neighbor-changes
+         address-family ipv4 unicast
+         address-family l2vpn evpn
+           retain route-target all
+         template peer VXLAN_LEAF
+           remote-as {{ ibgp_asn }}
+           update-source loopback0
+           address-family ipv4 unicast
+              send-community extended
+              route-reflector-client
+              soft-reconfiguration inbound
+           address-family l2vpn evpn
+              send-community
+              send-community extended
+              route-reflector-client
+         template peer VXLAN_SPINE
+           remote-as {{ ibgp_asn }}
+           update-source loopback0
+           address-family ipv4 unicast
+              send-community extended
+              soft-reconfiguration inbound
+           address-family l2vpn evpn
+              send-community
+              send-community extended
+  tags: evpn
+
+- name: iBGP neighbor config for leafs
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        neighbor {{ item }}
+          inherit peer VXLAN_SPINE
+  with_items: "{{ evpn_leaf_peers }}"
+  when: inventory_hostname in groups['leaf']
+  tags: evpn
+
+- name: iBGP neighbor config for spines
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        neighbor {{ item }}
+           inherit peer VXLAN_LEAF
+  with_items: "{{ evpn_spine_peers }}"
+  when: inventory_hostname in groups['spine']  
+  tags: evpn

@@ -1,0 +1,7 @@
+---
+- name: Configure Features in EOS
+  connection: network_cli
+  cli_config:
+    config: |
+      ip routing
+  tags: cfg-features

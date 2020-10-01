@@ -1,0 +1,26 @@
+- name: Configure ISL ports
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ item }}
+      iface {{ item }} inet manual
+        address {{ loopback_ip }}
+        mtu 9200
+    marker: "# {mark} {{ item }}"
+  with_items: "{{ isl_ports }}"
+  tags: ospf-isl-cfg  
+
+- name: Configure OSPF parameters in Cumulus
+  become: yes
+  blockinfile:
+    path: /etc/frr/frr.conf
+    block: |
+      interface {{ item }}
+        ip ospf area 0
+        ip ospf network point-to-point
+    marker: "# {mark} {{ item }}"
+  with_items: "{{ isl_ports }}"
+  tags: ospf-isl-cfg  
+
+

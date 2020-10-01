@@ -1,0 +1,23 @@
+isl_ports:
+  - swp1
+  - swp2
+
+evpn_leaf_peers:
+  - 10.0.0.21
+  - 10.0.0.22
+
+anycast_gw_mac: 00:00:00:11:12:34
+
+evpn_l3_info:
+  - vlan: 4001
+    vnid: 4001
+    vlanif: vlan4001
+    vrf: evpn-vrf
+
+l2vni_ifs: "{{ ['vni'] | zip_longest(l2_networks | json_query('[*].vnid') | map('string') | list, fillvalue='vni') | map('join', '') | join(' ') }}"
+
+l3vni_ifs: "{{ ['vni'] | zip_longest(evpn_l3_info | json_query('[*].vnid') | map('string') | list, fillvalue='vni') | map('join', '') | join(' ') }}"
+
+l2_ifs: "{{ l2_ports | json_query('[*].iface') | join(' ') }}"
+
+vid_list: "{{ l2_ports | json_query('[*].vlanid') | join(' ') }}"

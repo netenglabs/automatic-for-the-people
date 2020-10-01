@@ -1,0 +1,6 @@
+---
+- name: Set hostname
+  connection: network_cli
+  cli_config:
+    config: |
+      hostname {{ inventory_hostname }}

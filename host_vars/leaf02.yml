@@ -1,0 +1,29 @@
+loopback_ip: 10.0.0.12/32
+hw_address: 44:39:39:FF:40:96
+
+l2_ports:
+  - iface: swp3
+    vlanid: 20
+  - iface: swp4
+    vlanid: 30
+
+l2_networks:
+  - id: 20
+    vnid: 20
+    vlanif: Vlan20
+    ip_address: 172.16.2.254/24
+    mcast_grp: 224.1.1.192
+    ip_subnet: 172.16.2.0/24
+    vrf: evpn-vrf
+
+  - id: 30
+    vnid: 30
+    vlanif: Vlan30
+    ip_address: 172.16.3.254/24
+    mcast_grp: 224.1.1.192
+    ip_subnet: 172.16.3.0/24
+    vrf: evpn-vrf
+
+
+    
+

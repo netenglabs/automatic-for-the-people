@@ -1,0 +1,54 @@
+---
+- name: Configure VNIs
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ ['vni', item.vnid|string]|join('') }}
+      iface {{ ['vni', item.vnid|string]|join('') }}
+        mtu 9200
+        vxlan-id {{ item.vnid }}
+        vxlan-local-tunnelip {{ loopback_ip.split('/')[0] }}
+        bridge-learning off
+        bridge-access {{ item.id }}
+    marker: '# {mark} l2vni-{{ item.vnid }}'
+  with_items: "{{ l2_networks }}"
+  tags: justthis
+
+- name: Configure bridge for EVPN
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto bridge
+      iface bridge
+        bridge-vlan-aware yes
+        bridge-ports  {{ l2_ifs }} {{ l2vni_ifs }} {{ l3vni_ifs }}
+        bridge-vids {{ vid_list }}
+    marker: '# {mark} bridge'
+  tags: ifcfg
+
+- name: Configure L3VNI
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ ['vni', item.vnid|string]|join('') }}
+      iface {{ ['vni', item.vnid|string]|join('') }}
+        mtu 9200
+        vxlan-id {{ item.vnid }}
+        vxlan-local-tunnelip {{ loopback_ip.split('/')[0] }}
+        bridge-access {{ item.vlan }}
+        bridge-learning off
+
+      auto {{ item.vlanif }}
+      iface {{ item.vlanif }}
+        mtu 9200
+        hwaddress {{ hw_address }}
+        vlan-id {{ item.vlan }}
+        vlan-raw-device bridge
+        vrf {{ item.vrf }}
+    marker: "# {mark} {{ item }}"
+  with_items: "{{ evpn_l3_info }}"
+  tags: ifcfg
+        

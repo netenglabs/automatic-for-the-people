@@ -1,0 +1,11 @@
+---
+- name: Configure OSPF in NXOS
+  connection: network_cli
+  cli_config:
+    config: |
+      int loopback0
+        ip router ospf UNDERLAY area 0.0.0.0
+      !
+      router ospf UNDERLAY
+         log-adjacency-changes
+

@@ -1,0 +1,7 @@
+---
+- name: Save running-config to startup-config
+  connection: network_cli
+  cli_config:
+    config: |
+      copy running-config startup-config
+

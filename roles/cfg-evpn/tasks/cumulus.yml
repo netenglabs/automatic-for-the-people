@@ -1,0 +1,78 @@
+---
+- name: Configure L3 VNI in FRR
+  become: yes
+  blockinfile:
+    path: /etc/frr/frr.conf
+    block: |
+      vrf {{ item.vrf }}
+         vni {{ item.vnid }}
+    marker: "! {mark} l3vni-{{ item.vnid }}"
+  with_items: "{{ evpn_l3_info }}"
+  when: inventory_hostname in groups['leaf']
+  tags: evpn
+  
+- name: Configure iBGP
+  become: yes
+  blockinfile:
+    path: /etc/frr/frr.conf
+    block: |
+      router bgp {{ ibgp_asn }}
+        bgp router-id {{ loopback_ip.split('/')[0] }}
+        no bgp default ipv4-unicast
+        neighbor RR peer-group
+        neighbor RR remote-as internal
+        neighbor RR advertisement-interval 0
+        neighbor RR timers 3 10
+        neighbor RR timers connect 5
+        neighbor RR bfd
+    marker: '! {mark} base-ibgp'
+  tags: evpn
+
+- name: Configure iBGP peers
+  become: yes
+  blockinfile:
+    path: /etc/frr/frr.conf
+    block: |
+        neighbor {{ item }} peer-group RR
+    marker: "! {mark} {{ item }}"
+  with_items: "{{ evpn_leaf_peers }}"
+  tags: evpn  
+
+- name: Activate EVPN adv for leaves
+  become: yes
+  blockinfile:
+    path: /etc/frr/frr.conf
+    block: |
+        address-family l2vpn evpn
+          neighbor RR activate
+          advertise-svi-ip
+          advertise-all-vni
+          maximum-paths ibgp 16
+    marker: "! {mark} activate"
+  when: inventory_hostname in groups['leaf']
+  tags: evpn  
+
+- name: Activate EVPN adv for spines
+  become: yes
+  blockinfile:
+    path: /etc/frr/frr.conf
+    block: |
+        address-family ipv4 unicast
+           neighbor RR route-reflector-client
+           neighbor RR activate
+           maximum-paths ibgp 16
+         exit-address-family
+         address-family l2vpn evpn
+           neighbor RR route-reflector-client
+           neighbor RR activate
+         exit-address-family
+    marker: "! {mark} activate"
+  when: inventory_hostname in groups['spine']
+  tags: evpn  
+
+- name: Reload FRR
+  become: yes
+  service:
+    name: frr
+    state: reloaded
+  tags: evpn

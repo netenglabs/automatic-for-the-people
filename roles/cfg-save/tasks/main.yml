@@ -1,0 +1,6 @@
+---
+- name: Save config
+  include_tasks: "{{ansible_network_os}}.yml"
+
+
+

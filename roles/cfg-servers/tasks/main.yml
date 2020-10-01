@@ -1,0 +1,19 @@
+---
+ - name: Turn off SSH rev DNS lookup
+   lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^UseDNS '
+      line: UseDNS no
+
+ - name: Restart ssh
+   service: name=sshd state=restarted
+
+      
+ - name: Copy netplan file
+   become: yes
+   template: src=netplan.j2 dest=/etc/netplan/02-ansible.yaml
+
+ - name: Apply netplan
+   become: yes
+   command: netplan apply
+

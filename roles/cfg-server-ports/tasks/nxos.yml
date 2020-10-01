@@ -1,0 +1,22 @@
+---
+- name: Configure server-facing ports
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ item.iface }}
+        switchport access vlan {{ item.vlanid }}
+  with_items: "{{ l2_ports }}"
+  tags: ifcfg
+
+- name: configure l2 segments
+  connection: network_cli
+  cli_config: 
+    config: |
+     interface {{ item.vlanif }}
+       no shutdown
+       vrf member {{ item.vrf }}
+       ip address {{ item.ip_address }}
+       fabric forwarding mode anycast-gateway
+
+  with_items: "{{ l2_networks }}"
+  tags: ifcfg, vlan

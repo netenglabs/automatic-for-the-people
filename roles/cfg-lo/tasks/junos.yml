@@ -1,0 +1,8 @@
+---
+- name: Configure the loopback with IP addr
+  connection: network_cli
+  cli_config:
+    config: |
+      set interfaces lo0 unit 0 family inet address {{ loopback_ip }}
+
+  tags: cfglo

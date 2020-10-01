@@ -1,0 +1,13 @@
+---
+- name: Configure OSPF in FRR
+  become: yes
+  blockinfile:
+    path: /etc/frr/frr.conf
+    block: |
+      interface lo
+         ip ospf area 0.0.0.0
+      !
+      router ospf
+         ospf router-id {{ loopback_ip.split('/')[0] }}
+         passive-interface lo
+

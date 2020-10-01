@@ -1,0 +1,13 @@
+---
+- name: Configure OSPF
+  connection: network_cli
+  cli_config:
+    config: |
+      interface Loopback 0
+         ip ospf area 0.0.0.0
+      !
+      router ospf 1
+         log-adjacency-changes detail
+         router-id {{ loopback_ip.split('/')[0] }}
+         passive-interface Loopback 0
+

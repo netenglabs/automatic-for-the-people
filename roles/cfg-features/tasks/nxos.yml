@@ -1,0 +1,16 @@
+---
+- name: Configure Features in NXOS
+  connection: network_cli
+  cli_config:
+    config: |
+      feature privilege
+      feature lldp
+      feature interface-vlan
+      feature fabric forwarding
+      feature ospf
+      feature bgp
+      feature pim
+      nv overlay evpn
+      feature nv overlay
+      feature vn-segment-vlan-based
+  tags: cfg-features

@@ -1,0 +1,9 @@
+isl_ports:
+  - Eth1/1
+  - Eth1/2
+  - Eth1/3
+  - Eth1/4
+
+evpn_spine_peers:
+  - 10.0.0.11
+  - 10.0.0.12
