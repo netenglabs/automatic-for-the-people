@@ -86,10 +86,12 @@
            route-target both auto
            route-target both auto evpn
 
+
       interface {{ item.vlanif }}
         no shut
         vrf member {{ item.vrf }}
         ip forward
+        fabric forwarding mode anycast-gateway
 
       int nve1
         !
