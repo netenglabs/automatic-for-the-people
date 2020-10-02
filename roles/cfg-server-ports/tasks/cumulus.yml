@@ -3,13 +3,14 @@
   become: yes
   blockinfile:
     path: /etc/network/interfaces
+    
     block: |
       auto {{ item.iface }}
       iface {{ item.iface }}
          mtu 9100
          bridge-access {{ item.vlanid }}
     marker: "# {mark} l2port-{{ item.iface }}"
-  with_items: "{{ l2_ports }}"
+  with_items: "{{ l2_ports[ansible_network_os] }}"
   tags: ifcfg
 
 - name: Configure bridge
@@ -20,8 +21,8 @@
       auto bridge
       iface bridge
         bridge-vlan-aware yes
-        bridge-ports {{ l2_ports | json_query('[*].iface') | join(' ') }}
-        bridge-vids {{ l2_ports | json_query('[*].vlanid') | join(' ') }}
+        bridge-ports {{ l2_ifs }}
+        bridge-vids {{ vid_list }}
     marker: '# {mark} bridge'
   tags: ifcfg
 
@@ -53,7 +54,3 @@
   with_items: "{{ l2_networks }}"
   tags: ifcfg
 
-- name: ifup the interfaces
-  become: yes
-  command: ifup -a
-  tags: ifcfg      

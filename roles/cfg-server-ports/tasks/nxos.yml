@@ -5,7 +5,7 @@
     config: |
       int {{ item.iface }}
         switchport access vlan {{ item.vlanid }}
-  with_items: "{{ l2_ports }}"
+  with_items: "{{ l2_ports[ansible_network_os] }}"
   tags: ifcfg
 
 - name: configure l2 segments

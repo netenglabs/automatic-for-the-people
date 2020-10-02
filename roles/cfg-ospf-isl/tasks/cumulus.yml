@@ -8,7 +8,7 @@
         address {{ loopback_ip }}
         mtu 9200
     marker: "# {mark} {{ item }}"
-  with_items: "{{ isl_ports }}"
+  with_items: "{{ isl_ports[ansible_network_os] }}"
   tags: ospf-isl-cfg  
 
 - name: Configure OSPF parameters in Cumulus
@@ -20,7 +20,7 @@
         ip ospf area 0
         ip ospf network point-to-point
     marker: "# {mark} {{ item }}"
-  with_items: "{{ isl_ports }}"
+  with_items: "{{ isl_ports[ansible_network_os] }}"
   tags: ospf-isl-cfg  
 
 

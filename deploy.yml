@@ -48,7 +48,6 @@
       when: inventory_hostname in groups['leaf']
     - role: cfg-vxlan
       when: inventory_hostname in groups['leaf']
-      tags: justthis
     - role: cfg-evpn
     - role: cfg-save
 

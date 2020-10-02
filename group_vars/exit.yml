@@ -1,4 +1,11 @@
 isl_ports:
-  - Eth1
-  - Eth2
+  eos:
+    - Eth1
+    - Eth2
+  cumulus:
+    - swp1
+    - swp2
+  nxos:
+    - Eth1/1
+    - Eth1/2
 

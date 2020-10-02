@@ -37,7 +37,7 @@
       router bgp {{ ibgp_asn }}
         neighbor {{ item }}
           inherit peer VXLAN_SPINE
-  with_items: "{{ evpn_leaf_peers }}"
+  with_items: "{{ evpn_peers }}"
   when: inventory_hostname in groups['leaf']
   tags: evpn
 
@@ -48,6 +48,21 @@
       router bgp {{ ibgp_asn }}
         neighbor {{ item }}
            inherit peer VXLAN_LEAF
-  with_items: "{{ evpn_spine_peers }}"
+  with_items: "{{ evpn_peers }}"
   when: inventory_hostname in groups['spine']  
   tags: evpn
+
+- name: configure L3 GW address
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vrf {{ item.vrf }}
+          log-neighbor-changes
+          address-family ipv4 unicast
+            network {{ item.ip_subnet  }}
+            advertise l2vpn evpn
+
+  with_items: "{{ l2_networks }}"
+  when: inventory_hostname in groups['leaf']
+  tags: nve, nvel3

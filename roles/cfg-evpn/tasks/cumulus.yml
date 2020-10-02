@@ -28,14 +28,14 @@
     marker: '! {mark} base-ibgp'
   tags: evpn
 
-- name: Configure iBGP peers
+- name: Configure iBGP peers for leaf
   become: yes
   blockinfile:
     path: /etc/frr/frr.conf
     block: |
         neighbor {{ item }} peer-group RR
     marker: "! {mark} {{ item }}"
-  with_items: "{{ evpn_leaf_peers }}"
+  with_items: "{{ evpn_peers }}"
   tags: evpn  
 
 - name: Activate EVPN adv for leaves
@@ -70,9 +70,3 @@
   when: inventory_hostname in groups['spine']
   tags: evpn  
 
-- name: Reload FRR
-  become: yes
-  service:
-    name: frr
-    state: reloaded
-  tags: evpn

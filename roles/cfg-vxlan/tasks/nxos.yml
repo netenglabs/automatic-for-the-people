@@ -71,3 +71,31 @@
   with_items: "{{ l2_networks }}"
   when: inventory_hostname in groups['leaf'] and replication != 'mcast'
   tags: vxlan
+
+- name: Create and configure L3 VNI
+  connection: network_cli
+  cli_config:
+    config: |
+      vlan {{ item.vlan }}
+         vn-segment {{ item.vnid }}
+
+      vrf context {{ item.vrf }}
+         vni {{ item.vnid }}
+         rd auto
+         address-family ipv4 unicast
+           route-target both auto
+           route-target both auto evpn
+
+      interface {{ item.vlanif }}
+        no shut
+        vrf member {{ item.vrf }}
+        ip forward
+
+      int nve1
+        !
+        member vni {{ item.vnid }} associate-vrf
+
+  with_items: "{{ evpn_l3_info }}"
+  when: inventory_hostname in groups['leaf']
+  tags: nve, nvel3
+
