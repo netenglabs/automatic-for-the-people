@@ -42,14 +42,21 @@
   gather_facts: false
   roles:
     - cfg-features
-    - cfg-ospf-isl
-    - cfg-ospf-underlay 
+    - role: cfg-ospf-isl
+      tags: isl-ports
+    - role: cfg-ospf-underlay
+      tags: ospf
     - role: cfg-server-ports
       when: inventory_hostname in groups['leaf']
+      tags: server-port
     - role: cfg-vxlan
       when: inventory_hostname in groups['leaf']
+      tags: vxlan
     - role: cfg-evpn
+      tags: evpn
     - role: cfg-save
+    - role: cfg-reboot
+      tags: reboot
 
 - hosts: servers
   become: yes
