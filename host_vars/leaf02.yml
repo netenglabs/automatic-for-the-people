@@ -12,6 +12,12 @@ l2_ports:
       vlanid: 20
     - iface: Eth1/4
       vlanid: 30
+  eos:
+    - iface: Eth3
+      vlanid: 20
+    - iface: Eth4
+      vlanid: 30
+    
 
 l2_networks:
   - id: 20

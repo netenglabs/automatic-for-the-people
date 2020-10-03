@@ -9,6 +9,11 @@ isl_ports:
     - swp2
     - swp3
     - swp4
+  eos:
+    - Eth1
+    - Eth2
+    - Eth3
+    - Eth4
 
 evpn_peers:
   - 10.0.0.11
