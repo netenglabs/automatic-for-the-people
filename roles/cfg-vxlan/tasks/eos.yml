@@ -1,0 +1,27 @@
+---
+- name: Configure NVE (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int Vxlan1
+         vxlan source-interface loopback0
+         vxlan udp-port 4789
+  tags: vxlan
+
+- name: Configure VNIs (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      interface Vxlan1
+        vxlan vlan {{ item.id }} vni {{ item.vnid }}
+  with_items: "{{ l2_networks }}"
+  tags: vxlan
+
+- name: Configure L3VNI (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      interface Vxlan1
+        vxlan vrf {{ item.vrf }} vni {{ item.vnid }}
+  with_items: "{{ evpn_l3_info }}"
+  tags: vxlan, l3vni

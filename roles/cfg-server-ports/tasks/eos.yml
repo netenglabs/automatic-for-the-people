@@ -1,0 +1,32 @@
+---
+- name: Configure the server-facing ports (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ item.iface }}
+         switchport access vlan {{ item.vlanid }}
+         mtu 9164
+  with_items: " {{ l2_ports[ansible_network_os] }}"
+  tags: ifcfg
+
+- name: configure VRF (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      vrf instance {{ item.vrf }}
+      ip routing vrf {{ item.vrf }}
+  with_items: "{{ l2_networks }}"
+  tags: ifcfg
+
+- name: configure SVI (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ item.vlanif }}
+        no shut
+        mtu 9164
+        vrf {{ item.vrf }}
+        ip address virtual {{ item.ip_address }}
+  with_items: "{{ l2_networks }}"
+  tags: ifcfg
+
