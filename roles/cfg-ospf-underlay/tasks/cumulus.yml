@@ -1,5 +1,5 @@
 ---
-- name: Configure OSPF in FRR
+- name: Configure OSPF underlay (Cumulus)
   become: yes
   blockinfile:
     path: /etc/frr/frr.conf

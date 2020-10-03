@@ -1,4 +1,4 @@
 ---
-- name: set hostname
+- name: Configure ISL ports
   include_tasks: "{{ansible_network_os}}.yml"
 

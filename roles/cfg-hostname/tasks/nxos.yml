@@ -1,5 +1,5 @@
 ---
-- name: Set hostname
+- name: Set hostname (NXOS)
   connection: network_cli
   cli_config:
     config: |

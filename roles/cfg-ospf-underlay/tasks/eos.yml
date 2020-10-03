@@ -1,5 +1,5 @@
 ---
-- name: Configure OSPF
+- name: Configure OSPF underlay (EOS)
   connection: network_cli
   cli_config:
     config: |

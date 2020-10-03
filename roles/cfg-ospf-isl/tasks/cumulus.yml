@@ -1,4 +1,5 @@
-- name: Configure ISL ports
+---
+- name: Configure ISL ports (Cumulus)
   become: yes
   blockinfile:
     path: /etc/network/interfaces
@@ -11,7 +12,7 @@
   with_items: "{{ isl_ports[ansible_network_os] }}"
   tags: ospf-isl-cfg  
 
-- name: Configure OSPF parameters in Cumulus
+- name: Configure OSPF parameters (Cumulus)
   become: yes
   blockinfile:
     path: /etc/frr/frr.conf

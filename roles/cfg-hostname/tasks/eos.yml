@@ -1,5 +1,5 @@
 ---
-- name: Set hostname
+- name: Set hostname (EOS)
   connection: network_cli
   cli_config:
     config: |

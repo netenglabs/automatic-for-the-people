@@ -1,14 +1,23 @@
-- name: Configure ISL ports
+---
+- name: Configure ISL ports (EOS)
   connection: network_cli
   cli_config:
     config: |
       int {{ item }}
          no switchport
          no shut
-         ip ospf network point-to-point
          ip address unnumbered Loopback 0
-         ip ospf area 0.0.0.0
          mtu 9200
+  with_items: "{{ isl_ports[ansible_network_os] }}"
+  tags: ospf-isl-cfg
+
+- name: Configure OSPF Parameters (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ item }}
+         ip ospf network point-to-point
+         ip ospf area 0.0.0.0
   with_items: "{{ isl_ports[ansible_network_os] }}"
   tags: ospf-isl-cfg
 

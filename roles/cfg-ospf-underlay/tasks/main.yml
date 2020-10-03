@@ -1,4 +1,4 @@
 ---
-- name: set hostname
+- name: Configure OSPF underlay (NXOS)
   include_tasks: "{{ansible_network_os}}.yml"
 

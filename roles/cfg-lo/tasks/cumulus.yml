@@ -1,5 +1,5 @@
 ---
-- name: Configure the loopback with IP addr
+- name: Configure loopback IP (Cumulus)
   become: yes
   blockinfile:
     path: /etc/network/interfaces

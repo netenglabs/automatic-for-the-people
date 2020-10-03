@@ -1,5 +1,5 @@
 ---
-- name: Configure the loopback with IP addr
+- name: Configure loopback IP (EOS)
   connection: network_cli
   cli_config:
     config: |
