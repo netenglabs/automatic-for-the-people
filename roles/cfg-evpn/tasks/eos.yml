@@ -1,0 +1,75 @@
+---
+- name: iBGP base config for leaves (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        bgp log-neighbor-changes
+        router-id {{ loopback_ip.split('/')[0] }}
+         no bgp default ipv4-unicast
+        neighbor RR peer-group
+        neighbor RR remote-as {{ ibgp_asn }}
+        neighbor RR send-community extended
+  when: inventory_hostname in groups['leaf']
+  tags: evpn
+
+- name: iBGP base config for spines (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        bgp log-neighbor-changes
+        router-id {{ loopback_ip.split('/')[0] }}
+         no bgp default ipv4-unicast
+        neighbor RR peer-group
+        neighbor RR remote-as {{ ibgp_asn }}
+        neighbor RR send-community extended
+        neighbor RR route-reflector-client
+  when: inventory_hostname in groups['spine']
+  tags: evpn
+
+- name: Assign RD/RT for L2VNI (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vlan {{ item.id }}
+           rd {{ loopback_ip.split('/')[0] }}:{{ item.id }}
+           route-target import auto {{ ibgp_asn }}
+           route-target export auto
+           redistribute learned
+  with_items: "{{ l2_networks }}"
+  when: inventory_hostname in groups['leaf']
+  tags: evpn
+
+- name: iBGP neighbor config (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+         neighbor {{ item }} peer group RR
+  with_items: "{{ evpn_peers }}"
+  tags: evpn
+
+- name: Activate EVPN AFI/SAFI (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        address-family evpn
+          neighbor {{ item }} activate
+  with_items: "{{ evpn_peers }}"
+  tags: evpn
+
+- name: Add L3VNI advertisement (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+      vrf {{ item.vrf }}
+         rd {{ loopback_ip.split('/')[0] }}:{{ item.vlan }}
+         route-target import evpn {{ ibgp_asn }}:{{ item.vnid }}
+         route-target export evpn {{ ibgp_asn }}:{{ item.vnid }}         
+  with_items: "{{ evpn_l3_info }}"
+  when: inventory_hostname in groups['leaf']
+  tags: evpn
