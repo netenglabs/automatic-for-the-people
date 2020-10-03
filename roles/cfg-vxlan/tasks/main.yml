@@ -1,4 +1,4 @@
 ---
-- name: set hostname
+- name: configure VXLAN
   include_tasks: "{{ansible_network_os}}.yml"
 
