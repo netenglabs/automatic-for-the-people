@@ -1,5 +1,5 @@
 ---
-- name: Configure server-facing ports
+- name: Configure server-facing ports (Cumulus)
   become: yes
   blockinfile:
     path: /etc/network/interfaces
@@ -7,13 +7,13 @@
     block: |
       auto {{ item.iface }}
       iface {{ item.iface }}
-         mtu 9100
+         mtu 9164
          bridge-access {{ item.vlanid }}
     marker: "# {mark} l2port-{{ item.iface }}"
   with_items: "{{ l2_ports[ansible_network_os] }}"
   tags: ifcfg
 
-- name: Configure bridge
+- name: Configure bridge (Cumulus)
   become: yes
   blockinfile:
     path: /etc/network/interfaces
@@ -26,7 +26,7 @@
     marker: '# {mark} bridge'
   tags: ifcfg
 
-- name: Configure VRF
+- name: Configure VRF (Cumulus)
   become: yes
   blockinfile:
     path: /etc/network/interfaces
@@ -38,14 +38,14 @@
   with_items: "{{ l2_networks }}"
   tags: ifcfg  
 
-- name: Configure SVI
+- name: Configure SVI (Cumulus)
   become: yes
   blockinfile:
     path: /etc/network/interfaces
     block: |
       auto {{ item.vlanif }}
       iface {{ item.vlanif }}
-        mtu 9000
+        mtu 9164
         address {{ item.ip_address }}
         vrf {{ item.vrf }}
         vlan-id {{ item.id }}

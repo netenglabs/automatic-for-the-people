@@ -1,5 +1,5 @@
 ---
-- name: Configure NVE interface
+- name: Configure NVE interface (NXOS)
   connection: network_cli
   cli_config:
     config: |
@@ -10,7 +10,7 @@
   when: inventory_hostname in groups['leaf']
   tags: vxlan
 
-- name: configure anycast gateway
+- name: Configure anycast gateway (NXOS)
   connection: network_cli
   cli_config:
     config: |
@@ -18,7 +18,7 @@
   when: inventory_hostname in groups['leaf']
   tags: vxlan
 
-- name: Reconfigure access-list for arp suppression
+- name: Reconfigure access-list for arp suppression (NXOS)
   connection: network_cli
   cli_config:
     config: |
@@ -26,7 +26,7 @@
       hardware access-list tcam region arp-ether 256
   tags: vxlan
 
-- name: configure l2 vni segments with mcast
+- name: Configure VNIs with mcast (NXOS)
   connection: network_cli
   cli_config: 
     config: |
@@ -49,7 +49,7 @@
   when: inventory_hostname in groups['leaf'] and replication == 'mcast'
   tags: vxlan
 
-- name: configure l2 vni segments with ingress replication
+- name: Configure VNIs with ingress replication (NXOS)
   connection: network_cli
   cli_config: 
     config: |
@@ -62,17 +62,11 @@
          suppress-arp
          ingress-replication protocol bgp
 
-     evpn
-       vni {{ item.vnid }} l2
-         rd auto
-         route-target import auto
-         route-target export auto
-
   with_items: "{{ l2_networks }}"
   when: inventory_hostname in groups['leaf'] and replication != 'mcast'
   tags: vxlan
 
-- name: Create and configure L3 VNI
+- name: Configure L3VNI (NXOS)
   connection: network_cli
   cli_config:
     config: |
@@ -86,7 +80,6 @@
            route-target both auto
            route-target both auto evpn
 
-
       interface {{ item.vlanif }}
         no shut
         vrf member {{ item.vrf }}
@@ -99,5 +92,5 @@
 
   with_items: "{{ evpn_l3_info }}"
   when: inventory_hostname in groups['leaf']
-  tags: nve, nvel3
+  tags: vxlan, l3vni
 

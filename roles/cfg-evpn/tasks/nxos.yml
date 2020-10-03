@@ -1,5 +1,18 @@
 ---
-- name: iBGP base config
+- name: Assign RD/RT for L2VNI (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+     evpn
+       vni {{ item.vnid }} l2
+         rd auto
+         route-target import auto
+         route-target export auto
+  with_items: "{{ l2_networks }}"
+  when: inventory_hostname in groups['leaf']
+  tags: evpn
+      
+- name: iBGP base config (NXOS)
   connection: network_cli
   cli_config:
     config: |
@@ -30,7 +43,7 @@
               send-community extended
   tags: evpn
 
-- name: iBGP neighbor config for leafs
+- name: iBGP neighbor config for leafs (NXOS)
   connection: network_cli
   cli_config:
     config: |
@@ -41,7 +54,7 @@
   when: inventory_hostname in groups['leaf']
   tags: evpn
 
-- name: iBGP neighbor config for spines
+- name: iBGP neighbor config for spines (NXOS)
   connection: network_cli
   cli_config:
     config: |
@@ -52,7 +65,7 @@
   when: inventory_hostname in groups['spine']  
   tags: evpn
 
-- name: configure L3 GW address
+- name: Advertise L3 GW address (NXOS)
   connection: network_cli
   cli_config:
     config: |

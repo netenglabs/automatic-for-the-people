@@ -1,5 +1,5 @@
 ---
-- name: Configure L3 VNI in FRR
+- name: Configure L3 VNI in FRR (Cumulus)
   become: yes
   blockinfile:
     path: /etc/frr/frr.conf
@@ -11,7 +11,7 @@
   when: inventory_hostname in groups['leaf']
   tags: evpn
   
-- name: Configure iBGP
+- name: iBGP base config (Cumulus)
   become: yes
   blockinfile:
     path: /etc/frr/frr.conf
@@ -28,7 +28,7 @@
     marker: '! {mark} base-ibgp'
   tags: evpn
 
-- name: Configure iBGP peers for leaf
+- name: iBGP neighbor config (Cumulus)
   become: yes
   blockinfile:
     path: /etc/frr/frr.conf
@@ -38,7 +38,7 @@
   with_items: "{{ evpn_peers }}"
   tags: evpn  
 
-- name: Activate EVPN adv for leaves
+- name: iBGP activate EVPN AFI/SAFI Leaf (Cumulus)
   become: yes
   blockinfile:
     path: /etc/frr/frr.conf
@@ -52,7 +52,7 @@
   when: inventory_hostname in groups['leaf']
   tags: evpn  
 
-- name: Activate EVPN adv for spines
+- name: iBGP Activate EVPN AFI/SAFI Spine (Cumulus)
   become: yes
   blockinfile:
     path: /etc/frr/frr.conf

@@ -1,5 +1,5 @@
 ---
-- name: Configure VNIs
+- name: Configure VNIs (Cumulus)
   become: yes
   blockinfile:
     path: /etc/network/interfaces
@@ -13,9 +13,9 @@
         bridge-access {{ item.id }}
     marker: '# {mark} l2vni-{{ item.vnid }}'
   with_items: "{{ l2_networks }}"
-  tags: justthis
+  tags: vxlan
 
-- name: Configure bridge for EVPN
+- name: Configure bridge for EVPN (Cumulus)
   become: yes
   blockinfile:
     path: /etc/network/interfaces
@@ -26,9 +26,9 @@
         bridge-ports  {{ l2_ifs }} {{ l2vni_ifs }} {{ l3vni_ifs }}
         bridge-vids {{ vid_list }}
     marker: '# {mark} bridge'
-  tags: ifcfg
+  tags: vxlan
 
-- name: Configure L3VNI
+- name: Configure L3VNI (Cumulus)
   become: yes
   blockinfile:
     path: /etc/network/interfaces
@@ -50,5 +50,5 @@
         vrf {{ item.vrf }}
     marker: "# {mark} {{ item }}"
   with_items: "{{ evpn_l3_info }}"
-  tags: ifcfg
+  tags: vxlan, l3vni
         
