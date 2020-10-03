@@ -1,3 +1,3 @@
 ---
-- name: Configure features required for EVPN
+- name: Configure EVPN
   include_tasks: "{{ ansible_network_os }}.yml"
