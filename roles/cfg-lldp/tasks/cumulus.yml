@@ -1,0 +1,6 @@
+---
+- name: Restart lldpd (Cumulus)
+  become: yes
+  service:
+    name: lldpd
+    state: restarted

@@ -6,6 +6,7 @@
       int Vxlan1
          vxlan source-interface loopback0
          vxlan udp-port 4789
+         vxlan learn-restrict any
   tags: vxlan
 
 - name: Configure VNIs (EOS)

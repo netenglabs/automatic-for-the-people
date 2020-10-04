@@ -1,0 +1,20 @@
+---
+- name: Configure VTEP (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set protocols evpn encapsulation vxlan
+      set protocols evpn extended-vni-list all
+      set protocols evpn multicast-mode ingress-replication
+      set protocols evpn default-gateway no-gateway-community
+      set switch-options vtep-source-interface lo0.0
+      set switch-options route-distinguisher {{ loopback_ip.split('/')[0] }}:{{ inventory_hostname.split('leaf')[1] }}
+      set switch-options vrf-target target:{{ ibgp_asn }}:{{ inventory_hostname.split('leaf')[1] }} auto
+      
+- name: Configure VNIs (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set vlans {{ item.vlanif }} vxlan vni {{ item.vnid }}
+  with_items: "{{ l2_networks }}"
+

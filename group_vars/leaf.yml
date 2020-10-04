@@ -8,12 +8,16 @@ isl_ports:
   eos:
     - Eth1
     - Eth2
+  junos:
+    - xe-0/0/0
+    - xe-0/0/1
 
 evpn_peers:
   - 10.0.0.21
   - 10.0.0.22
 
-anycast_gw_mac: 00:00:00:11:12:34
+# The ID is the VLAN ID; Obviously VLANIDs can only be < 255 with this schemq
+anycast_gw_mac: "00:00:00:11:12:{{ item.id }}"
 
 evpn_l3_info:
   - vlan: 999

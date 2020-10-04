@@ -46,7 +46,7 @@
       auto {{ item.vlanif }}
       iface {{ item.vlanif }}
         mtu 9164
-        address {{ item.ip_address }}
+        virtual-address {{ item.ip_address }} {{ anycast_gw_mac }}
         vrf {{ item.vrf }}
         vlan-id {{ item.id }}
         vlan-raw-device bridge

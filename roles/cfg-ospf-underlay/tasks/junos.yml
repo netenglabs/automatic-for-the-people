@@ -1,0 +1,9 @@
+---
+- name: Configure OSPF underlay (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set protocols ospf area 0.0.0.0 interface lo0.0 passive
+      set routing-options router-id {{ loopback_ip.split('/')[0] }}
+
+

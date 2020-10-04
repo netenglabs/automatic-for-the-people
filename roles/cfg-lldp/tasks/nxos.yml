@@ -1,0 +1,7 @@
+---
+- name: Enable LLDP (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      feature lldp
+

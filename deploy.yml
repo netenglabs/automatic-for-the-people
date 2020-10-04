@@ -35,8 +35,12 @@
 - hosts: spine:leaf:exit:dcedge
   gather_facts: false
   roles:
-    - cfg-hostname
-    - cfg-lo
+    - role: cfg-hostname
+      tags: hostname
+    - role: cfg-lo
+      tags: loopback
+    - role: cfg-lldp
+      tags: lldp
 
 - hosts: spine:leaf:exit
   gather_facts: false
@@ -48,7 +52,7 @@
       tags: ospf
     - role: cfg-server-ports
       when: inventory_hostname in groups['leaf']
-      tags: server-port
+      tags: server-ports
     - role: cfg-vxlan
       when: inventory_hostname in groups['leaf']
       tags: vxlan

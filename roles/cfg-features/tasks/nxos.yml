@@ -4,7 +4,6 @@
   cli_config:
     config: |
       feature privilege
-      feature lldp
       feature interface-vlan
       feature fabric forwarding
       feature ospf

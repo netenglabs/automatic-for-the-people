@@ -1,0 +1,7 @@
+---
+- name: Configure LLDP (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set protocols lldp interface all
+

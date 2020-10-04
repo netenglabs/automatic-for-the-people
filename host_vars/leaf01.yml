@@ -17,7 +17,11 @@ l2_ports:
       vlanid: 10
     - iface: Eth4
       vlanid: 30
-    
+  junos:
+    - iface: xe-0/0/2
+      vlanid: 10
+    - iface: xe-0/0/3
+      vlanid: 30
 
 l2_networks:
   - id: 10

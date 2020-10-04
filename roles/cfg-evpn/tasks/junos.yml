@@ -1,0 +1,28 @@
+---
+- name: iBGP base config for spine (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set routing-options autonomous-system {{ ibgp_asn }}
+      set protocols bgp group evpn_overlay type internal
+      set protocols bgp group evpn_overlay local-address {{ loopback_ip.split('/')[0] }}
+      set protocols bgp group evpn_overlay cluster {{ loopback_ip.split('/')[0] }}
+      set protocols bgp group evpn_overlay family evpn signaling
+  when: inventory_hostname in groups['spine']
+
+- name: iBGP base config for leaf (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set routing-options autonomous-system {{ ibgp_asn }}      
+      set protocols bgp group evpn_overlay type internal
+      set protocols bgp group evpn_overlay local-address {{ loopback_ip.split('/')[0] }}
+      set protocols bgp group evpn_overlay family evpn signaling
+  when: inventory_hostname in groups['leaf']      
+
+- name: iBGP neighbor config (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set protocols bgp group evpn_overlay neighbor {{ item }}
+  with_items: "{{ evpn_peers }}"

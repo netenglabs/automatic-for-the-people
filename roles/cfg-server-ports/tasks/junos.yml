@@ -1,0 +1,18 @@
+---
+- name: Configure server-facing ports (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set interfaces {{ item.iface }} unit 0 family ethernet-switching vlan members {{ item.vlanid }}
+      delete interfaces {{ item.iface }} unit 0 family inet
+  with_items: "{{ l2_ports[ansible_network_os] }}"
+
+- name: Configure SVI (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set interfaces irb unit {{ item.vnid }} proxy-macip-advertisement
+      set interfaces irb unit {{ item.vnid }} family inet address {{ item.ip_address }}
+      set interfaces irb unit {{ item.vnid }} mac {{ anycast_gw_mac }}
+      set vlans {{ item.vlanif }} vlan-id {{ item.id }} l3-interface irb.{{ item.vnid }}
+  with_items: "{{ l2_networks }}"
