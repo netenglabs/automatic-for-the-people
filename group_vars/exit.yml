@@ -8,4 +8,7 @@ isl_ports:
   nxos:
     - Eth1/1
     - Eth1/2
+  junos:
+    - xe-0/0/0
+    - xe-0/0/1
 
