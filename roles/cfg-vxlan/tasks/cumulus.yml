@@ -55,7 +55,3 @@
   tags: vxlan, l3vni
   notify:
     - ifup interfaces
-
-- name: ifup interfaces
-  become: yes
-  command: ifup -a

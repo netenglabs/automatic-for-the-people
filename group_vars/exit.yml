@@ -12,3 +12,18 @@ isl_ports:
     - xe-0/0/0
     - xe-0/0/1
 
+evpn_peers:
+  - 10.0.0.21
+  - 10.0.0.22
+
+evpn_l3_info:
+  - vlan: 999
+    vnid: 999
+    vlanif: vlan999
+    loopback_ip:
+      leaf01:
+        10.0.0.101/32
+      leaf02:
+        10.0.0.102/32
+    vrf: evpn-vrf
+

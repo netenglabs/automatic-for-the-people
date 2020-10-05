@@ -25,9 +25,6 @@
     marker: "# {mark} {{ item }}"
   with_items: "{{ isl_ports[ansible_network_os] }}"
   tags: ospf-isl-cfg
-  norify:
+  notify:
     - ifup interfaces
 
-- name: ifup interfaces
-  become: yes
-  command: ifup -a

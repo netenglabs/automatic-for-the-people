@@ -8,7 +8,7 @@
          vni {{ item.vnid }}
     marker: "! {mark} l3vni-{{ item.vnid }}"
   with_items: "{{ evpn_l3_info }}"
-  when: inventory_hostname in groups['leaf']
+  when: inventory_hostname not in groups['spine']
   tags: evpn
   notify:
     - reload frr
@@ -42,7 +42,7 @@
   with_items: "{{ evpn_peers }}"
   tags: evpn  
   notify:
-    - reload frr
+    - reload FRR
 
 - name: iBGP activate EVPN AFI/SAFI Leaf (Cumulus)
   become: yes
@@ -55,10 +55,10 @@
           advertise-all-vni
           maximum-paths ibgp 16
     marker: "! {mark} activate"
-  when: inventory_hostname in groups['leaf']
+  when: inventory_hostname not in groups['spine']
   tags: evpn  
   notify:
-    - reload frr
+    - reload FRR
 
 - name: iBGP Activate EVPN AFI/SAFI Spine (Cumulus)
   become: yes
@@ -78,9 +78,4 @@
   when: inventory_hostname in groups['spine']
   tags: evpn  
   notify:
-    - reload frr
-
-- name: reload FRR (Cumulus)
-  service:
-    name: frr
-    state: reloaded
+    - reload FRR

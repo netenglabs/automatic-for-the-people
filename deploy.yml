@@ -61,6 +61,16 @@
     - role: cfg-save
     - role: cfg-reboot
       tags: reboot
+  handlers:
+    - name: reload FRR
+      become: yes
+      service:
+        name: frr
+        state: reloaded
+
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
 
 - hosts: servers
   become: yes

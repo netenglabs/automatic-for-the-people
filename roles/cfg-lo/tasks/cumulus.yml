@@ -8,5 +8,5 @@
       iface lo inet loopback
          address {{ loopback_ip }}
     marker: "# {mark} lo"
-
-  tags: cfglo
+  notify:
+    - ifup interfaces
