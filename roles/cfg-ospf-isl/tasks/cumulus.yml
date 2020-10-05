@@ -10,7 +10,9 @@
         mtu 9200
     marker: "# {mark} {{ item }}"
   with_items: "{{ isl_ports[ansible_network_os] }}"
-  tags: ospf-isl-cfg  
+  tags: ospf-isl-cfg
+  notify:
+    - ifup interfaces
 
 - name: Configure OSPF parameters (Cumulus)
   become: yes
@@ -22,6 +24,10 @@
         ip ospf network point-to-point
     marker: "# {mark} {{ item }}"
   with_items: "{{ isl_ports[ansible_network_os] }}"
-  tags: ospf-isl-cfg  
+  tags: ospf-isl-cfg
+  norify:
+    - ifup interfaces
 
-
+- name: ifup interfaces
+  become: yes
+  command: ifup -a

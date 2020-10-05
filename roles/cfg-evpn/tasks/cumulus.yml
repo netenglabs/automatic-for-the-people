@@ -10,6 +10,8 @@
   with_items: "{{ evpn_l3_info }}"
   when: inventory_hostname in groups['leaf']
   tags: evpn
+  notify:
+    - reload frr
   
 - name: iBGP base config (Cumulus)
   become: yes
@@ -27,6 +29,8 @@
         neighbor RR bfd
     marker: '! {mark} base-ibgp'
   tags: evpn
+  notify:
+    - reload frr
 
 - name: iBGP neighbor config (Cumulus)
   become: yes
@@ -37,6 +41,8 @@
     marker: "! {mark} {{ item }}"
   with_items: "{{ evpn_peers }}"
   tags: evpn  
+  notify:
+    - reload frr
 
 - name: iBGP activate EVPN AFI/SAFI Leaf (Cumulus)
   become: yes
@@ -51,6 +57,8 @@
     marker: "! {mark} activate"
   when: inventory_hostname in groups['leaf']
   tags: evpn  
+  notify:
+    - reload frr
 
 - name: iBGP Activate EVPN AFI/SAFI Spine (Cumulus)
   become: yes
@@ -69,4 +77,10 @@
     marker: "! {mark} activate"
   when: inventory_hostname in groups['spine']
   tags: evpn  
+  notify:
+    - reload frr
 
+- name: reload FRR (Cumulus)
+  service:
+    name: frr
+    state: reloaded

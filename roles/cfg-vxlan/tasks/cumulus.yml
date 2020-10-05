@@ -27,6 +27,8 @@
         bridge-vids {{ vid_list }}
     marker: '# {mark} bridge'
   tags: vxlan
+  notify:
+    - ifup interfaces
 
 - name: Configure L3VNI (Cumulus)
   become: yes
@@ -51,4 +53,9 @@
     marker: "# {mark} {{ item }}"
   with_items: "{{ evpn_l3_info }}"
   tags: vxlan, l3vni
-        
+  notify:
+    - ifup interfaces
+
+- name: ifup interfaces
+  become: yes
+  command: ifup -a
