@@ -1,3 +1,3 @@
 replication: ingress-replication
 ibgp_asn: 64520
-
+lo_addr: "{{ loopback_ip.split('/')[0] }}"
