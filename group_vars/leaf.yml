@@ -12,6 +12,31 @@ isl_ports:
     - xe-0/0/0
     - xe-0/0/1
 
+l2_networks:
+  - id: 10
+    vnid: 10
+    vlanif: Vlan10
+    ip_address: 172.16.1.254/24
+    mcast_grp: 224.1.1.192
+    ip_subnet: 172.16.1.0/24
+    vrf: evpn-vrf
+
+  - id: 20
+    vnid: 20
+    vlanif: Vlan20
+    ip_address: 172.16.2.254/24
+    mcast_grp: 224.1.1.192
+    ip_subnet: 172.16.2.0/24
+    vrf: evpn-vrf
+
+  - id: 30
+    vnid: 30
+    vlanif: Vlan30
+    ip_address: 172.16.3.254/24
+    mcast_grp: 224.1.1.192
+    ip_subnet: 172.16.3.0/24    
+    vrf: evpn-vrf
+
 evpn_peers:
   - 10.0.0.21
   - 10.0.0.22
@@ -23,6 +48,11 @@ evpn_l3_info:
   - vlan: 999
     vnid: 999
     vlanif: vlan999
+    loopback_ip:
+      leaf01:
+        10.0.0.101/32
+      leaf02:
+        10.0.0.102/32
     vrf: evpn-vrf
 
 l2vni_ifs: "{{ ['vni'] | zip_longest(l2_networks | json_query('[*].vnid') | map('string') | list, fillvalue='vni') | map('join', '') | join(' ') }}"
