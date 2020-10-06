@@ -20,7 +20,7 @@ evpn_l3_info:
   - vlan: 999
     vnid: 999
     vlanif: vlan999
-    loopback_ip:
+    junos_vrf_loopback_ip:
       leaf01:
         10.0.0.101/32
       leaf02:
