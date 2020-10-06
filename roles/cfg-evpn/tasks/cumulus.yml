@@ -11,7 +11,7 @@
   when: inventory_hostname not in groups['spine']
   tags: evpn
   notify:
-    - reload frr
+    - reload FRR
   
 - name: iBGP base config (Cumulus)
   become: yes
@@ -23,14 +23,11 @@
         no bgp default ipv4-unicast
         neighbor RR peer-group
         neighbor RR remote-as internal
-        neighbor RR advertisement-interval 0
-        neighbor RR timers 3 10
-        neighbor RR timers connect 5
         neighbor RR bfd
     marker: '! {mark} base-ibgp'
   tags: evpn
   notify:
-    - reload frr
+    - reload FRR
 
 - name: iBGP neighbor config (Cumulus)
   become: yes
