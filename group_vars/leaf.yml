@@ -12,8 +12,9 @@ isl_ports:
     - xe-0/0/0
     - xe-0/0/1
 
+# l2_networks is keyed off of VLANID
 l2_networks:
-  - id: 10
+  10:
     vnid: 10
     vlanif: Vlan10
     ip_address: 172.16.1.254/24
@@ -21,7 +22,7 @@ l2_networks:
     ip_subnet: 172.16.1.0/24
     vrf: evpn-vrf
 
-  - id: 20
+  20:
     vnid: 20
     vlanif: Vlan20
     ip_address: 172.16.2.254/24
@@ -29,7 +30,7 @@ l2_networks:
     ip_subnet: 172.16.2.0/24
     vrf: evpn-vrf
 
-  - id: 30
+  30:
     vnid: 30
     vlanif: Vlan30
     ip_address: 172.16.3.254/24
@@ -42,13 +43,13 @@ evpn_peers:
   - 10.0.0.22
 
 # The ID is the VLAN ID; Obviously VLANIDs can only be < 255 with this schemq
-anycast_gw_mac: "00:00:00:11:12:{{ item.id }}"
+anycast_gw_mac: "00:00:00:11:12:{{ item.vlanid }}"
 
 evpn_l3_info:
   - vlan: 999
     vnid: 999
     vlanif: vlan999
-    loopback_ip:
+    junos_vrf_loopback_ip:
       leaf01:
         10.0.0.101/32
       leaf02:
