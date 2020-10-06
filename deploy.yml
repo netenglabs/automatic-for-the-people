@@ -41,6 +41,16 @@
       tags: loopback
     - role: cfg-lldp
       tags: lldp
+  handlers:
+    - name: reload FRR
+      become: yes
+      service:
+        name: frr
+        state: reloaded
+
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
 
 - hosts: spine:leaf:exit
   gather_facts: false
@@ -60,6 +70,7 @@
       tags: evpn
     - role: cfg-save
     - role: cfg-reboot
+      when: ansible_network_os == "eos"
       tags: reboot
   handlers:
     - name: reload FRR
