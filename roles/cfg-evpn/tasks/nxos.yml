@@ -4,11 +4,11 @@
   cli_config:
     config: |
      evpn
-       vni {{ item.vnid }} l2
+       vni {{ l2_networks[item.vlanid].vnid }} l2
          rd auto
          route-target import auto
          route-target export auto
-  with_items: "{{ l2_networks }}"
+  with_items: "{{ l2_ports[ansible_network_os] }}"
   when: inventory_hostname in groups['leaf']
   tags: evpn
       
@@ -70,12 +70,12 @@
   cli_config:
     config: |
       router bgp {{ ibgp_asn }}
-        vrf {{ item.vrf }}
+        vrf {{ l2_networks[item.vlanid].vrf }}
           log-neighbor-changes
           address-family ipv4 unicast
-            network {{ item.ip_subnet  }}
+            network {{ l2_networks[item.vlanid].ip_subnet  }}
             advertise l2vpn evpn
 
-  with_items: "{{ l2_networks }}"
+  with_items: "{{ l2_ports[ansible_network_os] }}"
   when: inventory_hostname in groups['leaf']
   tags: nve, nvel3

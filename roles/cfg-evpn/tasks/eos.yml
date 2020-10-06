@@ -5,7 +5,7 @@
     config: |
       router bgp {{ ibgp_asn }}
         bgp log-neighbor-changes
-        router-id {{ loopback_ip.split('/')[0] }}
+        router-id {{ lo_addr }}
          no bgp default ipv4-unicast
         neighbor RR peer-group
         neighbor RR remote-as {{ ibgp_asn }}
@@ -19,7 +19,7 @@
     config: |
       router bgp {{ ibgp_asn }}
         bgp log-neighbor-changes
-        router-id {{ loopback_ip.split('/')[0] }}
+        router-id {{ lo_addr }}
          no bgp default ipv4-unicast
         neighbor RR peer-group
         neighbor RR remote-as {{ ibgp_asn }}
@@ -34,11 +34,11 @@
     config: |
       router bgp {{ ibgp_asn }}
         vlan {{ item.id }}
-           rd {{ loopback_ip.split('/')[0] }}:{{ item.id }}
+           rd {{ lo_addr }}:{{ item.vlanid }}
            route-target import auto {{ ibgp_asn }}
            route-target export auto
            redistribute learned
-  with_items: "{{ l2_networks }}"
+  with_items: "{{ l2_ports[ansible_network_os] }}"
   when: inventory_hostname in groups['leaf']
   tags: evpn
 
@@ -67,7 +67,7 @@
     config: |
       router bgp {{ ibgp_asn }}
       vrf {{ item.vrf }}
-         rd {{ loopback_ip.split('/')[0] }}:{{ item.vlan }}
+         rd {{ lo_addr }}:{{ item.vlan }}
          route-target import evpn {{ ibgp_asn }}:{{ item.vnid }}
          route-target export evpn {{ ibgp_asn }}:{{ item.vnid }}         
   with_items: "{{ evpn_l3_info }}"
