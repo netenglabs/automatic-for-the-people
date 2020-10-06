@@ -35,11 +35,11 @@
   blockinfile:
     path: /etc/network/interfaces
     block: |
-      auto {{ item.vrf }}
-      iface {{ item.vrf }}
+      auto {{ l2_networks[item.vlanid].vrf }}
+      iface {{ l2_networks[item.vlanid].vrf }}
         vrf-table auto
-    marker: "# {mark} vrf-{item.vrf}"
-  with_items: "{{ l2_networks }}"
+    marker: "# {mark} vrf-{l2_networks[item.vlanid].vrf}"
+  with_items: "{{ l2_ports[ansible_network_os] }}"
   tags: ifcfg  
   notify:
     - ifup interfaces
@@ -49,15 +49,15 @@
   blockinfile:
     path: /etc/network/interfaces
     block: |
-      auto {{ item.vlanif }}
-      iface {{ item.vlanif }}
+      auto {{ l2_networks[item.vlanid].vlanif }}
+      iface {{ l2_networks[item.vlanid].vlanif }}
         mtu 9164
-        virtual-address {{ item.ip_address }} {{ anycast_gw_mac }}
-        vrf {{ item.vrf }}
-        vlan-id {{ item.id }}
+        virtual-address {{ l2_networks[item.vlanid].ip_address }} {{ anycast_gw_mac }}
+        vrf {{ l2_networks[item.vlanid].vrf }}
+        vlan-id {{ item.vlanid }}
         vlan-raw-device bridge
-    marker: "# {mark} SVI-{{ item.vlanif }}"
-  with_items: "{{ l2_networks }}"
+    marker: "# {mark} SVI-vlan{{ item.vlanid }}"
+  with_items: "{{ l2_ports[ansible_network_os] }}"
   tags: ifcfg
   notify:
     - ifup interfaces

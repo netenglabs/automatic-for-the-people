@@ -14,8 +14,8 @@
   cli_config:
     config: |
       interface Vxlan1
-        vxlan vlan {{ item.id }} vni {{ item.vnid }}
-  with_items: "{{ l2_networks }}"
+        vxlan vlan {{ item.vlanid }} vni {{ l2_networks[item.vlanid].vnid }}
+  with_items: "{{ l2_ports[ansible_network_os] }}"
   tags: vxlan
 
 - name: Configure L3VNI (EOS)

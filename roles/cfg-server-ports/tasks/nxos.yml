@@ -13,10 +13,10 @@
   connection: network_cli
   cli_config: 
     config: |
-     interface {{ item.vlanif }}
+     interface {{ l2_networks[item.vlanid].vlanif }}
        no shutdown
        mtu 9164
-       ip address {{ item.ip_address }}
+       ip address {{ l2_networks[item.vlan_id].ip_address }}
 
-  with_items: "{{ l2_networks }}"
+  with_items: "{{ l2_ports[ansible_network_os] }}"
   tags: ifcfg, vlan

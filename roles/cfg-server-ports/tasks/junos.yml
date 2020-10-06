@@ -11,8 +11,8 @@
   connection: network_cli
   cli_config:
     config: |
-      set interfaces irb unit {{ item.vnid }} proxy-macip-advertisement
-      set interfaces irb unit {{ item.vnid }} family inet address {{ item.ip_address }}
-      set interfaces irb unit {{ item.vnid }} mac {{ anycast_gw_mac }}
-      set vlans {{ item.vlanif }} vlan-id {{ item.id }} l3-interface irb.{{ item.vnid }}
-  with_items: "{{ l2_networks }}"
+      set interfaces irb unit {{ l2_networks[item.vlanid].vnid }} proxy-macip-advertisement
+      set interfaces irb unit {{ l2_networks[item.vlanid].vnid }} family inet address {{ l2_networks[item.vlanid].ip_address }}
+      set interfaces irb unit {{ l2_networks[item.vlanid].vnid }} mac {{ anycast_gw_mac }}
+      set vlans {{ l2_networks[item.vlanid].vlanif }} vlan-id {{ item.vlanid }} l3-interface irb.{{ l2_networks[item.vlanid].vnid }}
+  with_items: "{{ l2_ports[ansible_network_os] }}"

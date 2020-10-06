@@ -16,8 +16,8 @@
   connection: network_cli
   cli_config:
     config: |
-      set vlans {{ item.vlanif }} vxlan vni {{ item.vnid }}
-  with_items: "{{ l2_networks }}"
+      set vlans {{ l2_networks[item.vlanid].vlanif }} vxlan vni {{ l2_networks[item.vlanid].vnid }}
+  with_items: "{{ l2_ports[ansible_network_os] }}"
 
 - name: Configure L3VNI (Junos)
   connection: network_cli
@@ -25,19 +25,18 @@
     config: |
       set routing-instances {{ item.vrf }} instance-type vrf
       set routing-instances {{ item.vrf }} interface lo0.{{ item.vlan }}
-      set interfaces lo0 unit {{ item.vlan }} family inet address {{ item.loopback_ip[inventory_hostname] }}
+      set interfaces lo0 unit {{ item.vlan }} family inet address {{ item.junos_vrf_loopback_ip[inventory_hostname] }}
       set routing-instances {{ item.vrf }} route-distinguisher {{ lo_addr }}:{{item.vlan}}
       set routing-instances {{ item.vrf }} vrf-target target:{{ibgp_asn}}:{{ item.vnid }}
       set routing-instances {{ item.vrf }} vrf-table-label
       set routing-instances {{ item.vrf }} protocols evpn ip-prefix-routes advertise direct-nexthop
-      set routing-instances {{ item.vrf }} protocols evpn ip-prefix-routes encapsulation vxlan
-      set routing-instances {{ item.vrf }} protocols evpn vni {{ item.vnid }}
+      set routing-instances {{ item.vrf }} protocols evpn ip-prefix-routes encapsulation vxlan vni {{ item.vnid }}
   with_items: "{{ evpn_l3_info }}"
 
 - name: Move SVIs into appropriate VRF
   connection: network_cli
   cli_config:
     config: |
-      set routing-instances {{ item.vrf }} interface irb.{{ item.id }}
-  with_items: "{{ l2_networks }}"
+      set routing-instances {{ l2_networks[item.vlanid].vrf }} interface irb.{{ l2_networks[item.vlanid].vnid }}
+  with_items: "{{ l2_ports[ansible_network_os] }}"
 
