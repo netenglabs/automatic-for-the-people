@@ -4,6 +4,6 @@
   cli_config:
     config: |
       set protocols ospf area 0.0.0.0 interface lo0.0 passive
-      set routing-options router-id {{ loopback_ip.split('/')[0] }}
+      set routing-options router-id {{ lo_addr }}
 
 
