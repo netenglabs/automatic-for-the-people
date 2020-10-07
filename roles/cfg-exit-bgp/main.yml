@@ -1,0 +1,4 @@
+---
+- name: Configure BGP on Exit Leaves
+  include_tasks: "{{ansible_network_os}}.yml"
+

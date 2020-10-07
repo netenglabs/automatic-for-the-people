@@ -1,0 +1,51 @@
+---
+- name: eBGP base config for FW in default VRF (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set protocols bgp group firewall type external
+      
+- name: eBGP base config for FW in EVPN VRFs (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set routing-instance {{ item.vrf }} routing-options router-id {{ item.junos_vrf_loopback_ip[inventory_hostname].split('/')[0] }}
+      set routing-instance {{ item.vrf }} routing-options autonomous-system {{ ibgp_asn }}
+      set routing-instance {{ item.vrf }} protocols bgp group firewall type external
+  with_items: "{{ evpn_l3_info }}"
+
+- name: eBGP base config for external VRF (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set routing-instance {{ internet_vrf }} routing-options autonomous-system {{ ibgp_asn }}
+      set routing-instance {{ internet_vrf }} routing-options router-id {{ internet_vrf_firewall_ports[ansible_network_os][0].address.split('/')[0] }}
+      set routing-instance {{ internet_vrf }} protocols bgp group dcedge type external
+
+- name: Assign neighbors to FW in default VRF BGP (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set protocols bgp group firewall neighbor {{ item.address }} peer-as {{ item.remote_asn }}
+  with_items: "{{ firewall_bgp_peers_default_vrf }}"
+
+- name: Assign neighbors to FW in EVPN VRfs (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set routing-instance {{ item.vrf }} protocols bgp group firewall neighbor {{ item.address }} peer-as {{ item.remote_asn }}
+  with_items: "{{ firewall_bgp_peers_evpn_vrfs }}"
+
+- name: Assign neighbors to FW in internet VRfs (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set routing-instance {{ internet_vrf }} protocols bgp group dcedge neighbor {{ item.address }} peer-as {{ item.remote_asn }}
+  with_items: "{{ firewall_bgp_peers_internet_vrfs }}"
+
+- name: Assign neighbors to DCEdge routers (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set routing-instance {{ internet_vrf }} protocols bgp group dcedge neighbor {{ item.address }} peer-as {{ item.remote_asn }}
+  with_items: "{{ dcedge_bgp_peers }}"

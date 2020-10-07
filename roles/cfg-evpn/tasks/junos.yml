@@ -5,8 +5,8 @@
     config: |
       set routing-options autonomous-system {{ ibgp_asn }}
       set protocols bgp group evpn_overlay type internal
-      set protocols bgp group evpn_overlay local-address {{ loopback_ip.split('/')[0] }}
-      set protocols bgp group evpn_overlay cluster {{ loopback_ip.split('/')[0] }}
+      set protocols bgp group evpn_overlay local-address {{ lo_addr }}
+      set protocols bgp group evpn_overlay cluster {{ lo_addr }}
       set protocols bgp group evpn_overlay family evpn signaling
   when: inventory_hostname in groups['spine']
 
@@ -16,9 +16,9 @@
     config: |
       set routing-options autonomous-system {{ ibgp_asn }}      
       set protocols bgp group evpn_overlay type internal
-      set protocols bgp group evpn_overlay local-address {{ loopback_ip.split('/')[0] }}
+      set protocols bgp group evpn_overlay local-address {{ lo_addr }}
       set protocols bgp group evpn_overlay family evpn signaling
-  when: inventory_hostname in groups['leaf']      
+  when: inventory_hostname not in groups['spine']      
 
 - name: iBGP neighbor config (Junos)
   connection: network_cli
@@ -26,3 +26,4 @@
     config: |
       set protocols bgp group evpn_overlay neighbor {{ item }}
   with_items: "{{ evpn_peers }}"
+

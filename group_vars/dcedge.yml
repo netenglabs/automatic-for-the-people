@@ -1,6 +1,3 @@
-loopback_ip: 10.0.0.41/32
-bgp_asn: 65534
-
 isl_ports:
   cumulus:
     - iface: swp1
@@ -22,7 +19,3 @@ isl_ports:
       address: 169.254.127.0/31
     - iface: xe-0/0/1
       address: 169.254.127.2/31      
-
-dcedge_bgp_peers:
-  - 169.254.127.1
-  - 169.254.127.3

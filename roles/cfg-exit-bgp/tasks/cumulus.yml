@@ -1,0 +1,13 @@
+---
+- name: copy FRR daemons
+  become: yes
+  copy: src=daemons dest=/etc/frr/
+  
+- name: copy FRR.conf
+  become: yes
+  template:
+    src: frr.conf.j2
+    dest: /etc/frr/frr.conf
+    validate: vtysh -C -f %s
+    
+

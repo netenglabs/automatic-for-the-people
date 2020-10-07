@@ -1,0 +1,36 @@
+frr defaults traditional
+hostname edge01
+no ip forwarding
+no ipv6 forwarding
+!
+service integrated-vtysh-config
+!
+log syslog
+!
+router bgp {{ bgp_asn }}
+ bgp router-id {{ lo_addr }}
+ no bgp default ipv4-unicast
+ bgp bestpath as-path multipath-relax
+ neighbor fabric peer-group
+ neighbor fabric remote-as external
+ neighbor fabric bfd
+ {% for peer in fw_peers %}
+ neighbor {{ peer.iface }} interface peer-group fabric
+ {% endfor %}
+ !
+ address-family ipv4 unicast
+  neighbor fabric activate
+  redistribute connected route-map LOOPBACKS
+  maximum-paths 16
+ exit-address-family
+!
+route-map SETSRC permit 10
+ set src {{ lo_addr }}
+!
+route-map LOOPBACKS permit 10
+ match interface lo
+!
+ip protocol bgp route-map SETSRC
+!
+line vty
+!

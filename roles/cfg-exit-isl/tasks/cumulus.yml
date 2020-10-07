@@ -1,0 +1,68 @@
+---
+- name: Configure default VRF Firewall ports (Cumulus)
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ item.iface }}
+      iface {{ item.iface }} inet manual
+        address {{ item.address }}
+        mtu 9200
+    marker: "# {mark} {{ item.iface }}"
+  with_items: "{{ default_vrf_firewall_ports[ansible_network_os] }}"
+  notify:
+    - ifup interfaces
+
+- name: Configure EVPN VRFs Firewall ports (Cumulus)
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ item.vrf }}
+      iface {{ item.vrf }}
+         vrf-table auto
+
+      auto {{ item.iface }}
+      iface {{ item.iface }} inet manual
+        address {{ item.address }}
+        vrf {{ item.vrf }}
+        mtu 9200
+    marker: "# {mark} {{ item.iface }}"
+  with_items: "{{ evpn_vrf_firewall_ports[ansible_network_os] }}"
+  notify:
+    - ifup interfaces
+
+- name: Configure Internet VRF Firewall ports (Cumulus)
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ item.vrf }}
+      iface {{ item.vrf }}
+         vrf-table auto
+
+      auto {{ item.iface }}
+      iface {{ item.iface }} inet manual
+        address {{ item.address }}
+        vrf {{ item.vrf }}
+        mtu 9200
+    marker: "# {mark} {{ item.iface }}"
+  with_items: "{{ internet_vrf_firewall_ports[ansible_network_os] }}"
+  notify:
+    - ifup interfaces
+
+- name: Configure DCEdge port
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ item.iface }}
+      iface {{ item.iface }} inet manual
+        address {{ item.address }}
+        vrf {{ item.vrf }}
+        mtu 9200
+    marker: "# {mark} {{ item.iface }}"
+  with_items: "{{ dcedge_ports[ansible_network_os] }}"
+  notify:
+    - ifup interfaces
+

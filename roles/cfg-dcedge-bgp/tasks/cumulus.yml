@@ -1,0 +1,35 @@
+---
+- name: Configure BGP base config (Cumulus)
+  become: yes
+  blockinfile:
+    path: /etc/frr/frr.conf
+    block: |
+      route-map LOOPBACKS permit 10
+        match interface lo
+      !
+      router bgp {{ bgp_asn }}
+        bgp router-id {{ lo_addr }}
+        neighbor ISL peer-group
+        neighbor ISL remote-as external
+        neighbor ISL bfd
+        address-family ipv4 unicast
+          neighbor ISL activate
+          neighbor ISL default-originate
+          redistribute connected route-map LOOPBACKS
+        exit-address-family
+    marker: '!{mark} base-bgp'
+  notify:
+    - reload frr
+
+- name: Configure BGP neighbors (Cumulus)
+  become: yes
+  blockinfile:
+    path: /etc/frr/frr.conf
+    block: |
+        neighbor {{ item }} peer-group ISL
+    marker: '!{mark} { item }'
+  with_items: "{{ dcedge_bgp_peers }}"
+  notify:
+    - reload frr
+    
+

@@ -1,0 +1,12 @@
+---
+- name: copy FRR daemons
+  copy: src=daemons dest=/etc/frr/
+  
+- name: copy FRR.conf
+  template:
+    src: templates/frr.conf.j2
+    dest: /etc/frr/frr.conf
+    validate: vtysh -C -f %s
+  notify:
+    - restart FRR
+

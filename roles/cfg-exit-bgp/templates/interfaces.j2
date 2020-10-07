@@ -1,0 +1,84 @@
+auto all
+
+iface lo inet loopback
+	address {{ loopback_ip }}
+	vxlan-local-tunnelip {{ loopback_ip }}
+
+iface mgmt
+	address 127.0.0.1/8
+	vrf-table auto
+
+# Define the EVPN VRFs
+{% for vrf in evpn_vrfs %}
+iface {{ vrf }}
+	address 10.0.0.101/32
+	vrf-table auto
+{% endfor %}
+
+# Single internet VRF
+iface internet-vrf
+	address 10.0.0.101/32
+	vrf-table auto
+
+iface eth0 inet dhcp
+	vrf mgmt
+
+# Spine connection ports
+{% for port in isl_ports[ansible_network_os] %}
+iface {{ item }}
+  mtu 9200
+  address {{ loopback_ip }}
+  
+{% endfor %}
+
+# Firewall port in default VRF
+{% for port in default_vrf_firewall_ports[ansible_network_os] %}
+iface {{ port.iface }} inet manual
+   address {{ port.address }}
+   mtu 9200
+{% endfor %}
+
+# EVPN VRFs firewall ports
+{% for port in evpn_vrf_firewall_ports[ansible_network_os] %}
+iface {{ port.iface }} inet manual
+   address {{ port.address }}
+   mtu 9200
+   vrf {{ port.vrf }}
+{% endfor %}
+
+# Internet VRF firewall ports
+{% for port in internet_vrf_firewall_ports[ansible_network_os] %}
+iface {{ port.iface }} inet manual
+   address {{ port.address }}
+   mtu 9200
+   vrf {{ port.vrf }}
+{% endfor %}
+
+# DC Edge ports
+{% for port in dcedgefirewall_ports[ansible_network_os] %}
+iface {{ port.iface }} inet manual
+   address {{ port.address }}
+   mtu 9200
+   vrf {{ port.vrf }}
+{% endfor %}
+
+iface bridge
+	bridge-vlan-aware yes
+	bridge-vids {{ evpn_l3_info | json_query('[*].vlan') | join (' ') }}
+	bridge-ports {{ l3vni_ifs }}
+
+# Define SVI and l3VNI for EVPN L3 VNIs
+{% for item in evpn_l3_info %}
+iface item.vlanif
+    mtu 9200
+    vlan-id {{ item.vlan }}
+    vlan-raw-device bridge
+    vrf {{ item.vrf }}
+
+iface vni{{ item.vnid }}
+    mtu 9200
+    vxlan-id {{ item.vnid }}
+    bridge-learning off
+    bridge-access {{ item.vlan }}
+
+{% endfor %}

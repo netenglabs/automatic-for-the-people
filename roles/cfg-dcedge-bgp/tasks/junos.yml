@@ -1,0 +1,18 @@
+---
+- name: Configure BGP base config (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set routing-options router-id {{ lo_addr }}
+      set routing-options autonomous-system {{ bgp_asn }}
+      set policy-options policy-statement DEF-ADV term 1 from protocol direct
+      set policy-options policy-statement DEF-ADV term 1 then accept
+      set protocols bgp group ISL type external
+      set protocols bgp group ISL export DEF-ADV
+
+- name: Configure BGP neighbors (Junos)
+  connection: network_cli
+  cli_config: |
+    set protocols bgp group ISL neighbor {{ item }} peer-as {{ ibgp_asn }}
+  with_items: "{{ dcedge_bgp_peers }}"
+    

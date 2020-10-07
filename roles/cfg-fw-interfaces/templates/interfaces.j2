@@ -1,0 +1,16 @@
+auto lo
+iface lo inet static
+   address 10.0.0.100/32
+
+auto eth0
+iface eth0 inet dhcp
+
+auto eth1
+iface eth1 inet manual
+
+{% for peer in fw_peers %}
+auto {{ peer.iface }}
+iface  {{ peer.iface }} inet static
+   address {{ peer.address }}
+
+{% endfor %}

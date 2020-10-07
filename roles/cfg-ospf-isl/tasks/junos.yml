@@ -7,7 +7,6 @@
       delete interfaces {{ item }} unit 0 family inet dhcp
       set interfaces {{ item }} unit 0 family inet unnumbered-address lo0.0
   with_items: "{{ isl_ports[ansible_network_os] }}"
-  tags: ospf-isl-cfg
 
 - name: Configure OSPF Parameters (JunOS)
   connection: network_cli
@@ -15,5 +14,5 @@
     config: |
       set protocols ospf area 0.0.0.0 interface {{ item }}.0 interface-type p2p
   with_items: "{{ isl_ports[ansible_network_os] }}"
-  tags: ospf-isl-cfg
+
 

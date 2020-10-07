@@ -21,9 +21,17 @@ evpn_l3_info:
     vnid: 999
     vlanif: vlan999
     junos_vrf_loopback_ip:
-      leaf01:
-        10.0.0.101/32
-      leaf02:
-        10.0.0.102/32
+      exit01:
+        10.0.0.121/32
+      exit02:
+        10.0.0.122/32
     vrf: evpn-vrf
+
+internet_vrf: internet-vrf
+
+l2_ifs:
+l2vni_ifs:
+vid_list: "{{ evpn_l3_info | json_query('[*].vlan') }}"
+evpn_vrfs: "{{ evpn_l3_info | json_query('[*].vrf') }}"
+l3vni_ifs: "{{ ['vni'] | zip_longest(evpn_l3_info | json_query('[*].vnid') | map('string') | list, fillvalue='vni') | map('join', '') | join(' ') }}"
 

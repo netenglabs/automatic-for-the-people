@@ -6,11 +6,11 @@
       set protocols evpn encapsulation vxlan
       set protocols evpn extended-vni-list all
       set protocols evpn multicast-mode ingress-replication
-      set protocols evpn default-gateway no-gateway-community
+      set protocols evpn default-gateway do-not-advertise
       set routing-options forwarding-table chained-composite-next-hop ingress evpn
       set switch-options vtep-source-interface lo0.0
-      set switch-options route-distinguisher {{ loopback_ip.split('/')[0] }}:{{ inventory_hostname.split('leaf')[1] }}
-      set switch-options vrf-target target:{{ ibgp_asn }}:{{ inventory_hostname.split('leaf')[1] }} auto
+      set switch-options route-distinguisher {{ lo_addr }}:{{ inventory_hostname[-2:] }}
+      set switch-options vrf-target target:{{ ibgp_asn }}:{{ inventory_hostname[-2:] }} auto
       
 - name: Configure VNIs (Junos)
   connection: network_cli
@@ -18,6 +18,14 @@
     config: |
       set vlans {{ l2_networks[item.vlanid].vlanif }} vxlan vni {{ l2_networks[item.vlanid].vnid }}
   with_items: "{{ l2_ports[ansible_network_os] }}"
+  when: l2_ports is defined
+
+- name: Symmetric routing policy config (Junos)
+  connection: network_cli
+  cli_config:
+    config: |
+      set policy-options policy-statement SYMM-EVPN term 1 from protocol evpn
+      set policy-options policy-statement SYMM-EVPN term 1 then accept  
 
 - name: Configure L3VNI (Junos)
   connection: network_cli
@@ -31,6 +39,7 @@
       set routing-instances {{ item.vrf }} vrf-table-label
       set routing-instances {{ item.vrf }} protocols evpn ip-prefix-routes advertise direct-nexthop
       set routing-instances {{ item.vrf }} protocols evpn ip-prefix-routes encapsulation vxlan vni {{ item.vnid }}
+      set routing-instances {{ item.vrf }} protocols evpn ip-prefix-routes export SYMM-EVPN
   with_items: "{{ evpn_l3_info }}"
 
 - name: Move SVIs into appropriate VRF
@@ -39,4 +48,5 @@
     config: |
       set routing-instances {{ l2_networks[item.vlanid].vrf }} interface irb.{{ l2_networks[item.vlanid].vnid }}
   with_items: "{{ l2_ports[ansible_network_os] }}"
+  when: "{{ l2_ports is defined }}"
 

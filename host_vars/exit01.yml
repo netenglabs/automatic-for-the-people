@@ -1,19 +1,60 @@
 loopback_ip: 10.0.0.31/32
+hw_address: 44:39:39:FF:41:95
 
-l2_networks:
-  - id: 10
-    vnid: 100010
-    vlanif: Vlan10
-    ip_address: 172.16.1.254/24
-    mcast_grp: 224.1.1.192
-    ip_subnet: 172.16.2.0/24
-    vrf: EVPN
+default_vrf_firewall_ports:
+  cumulus:
+    - iface: swp3.2
+      address: 169.254.254.1/30
+      vrf: default
+  junos:
+    - iface: xe-0/0/2
+      address: 169.254.254.1/30
+      vrf: default
+      vlan: 2
 
-  - id: 30
-    vnid: 100030
-    vlanif: Vlan30
-    ip_address: 172.16.3.254/24
-    mcast_grp: 224.1.1.192
-    ip_subnet: 172.16.3.0/24    
-    vrf: EVPN
-    
+evpn_vrf_firewall_ports:
+  cumulus:
+    - iface: swp3.3
+      address: 169.254.254.5/30
+      vrf: evpn-vrf
+  junos:
+    - iface: xe-0/0/2
+      address: 169.254.254.5/30
+      vrf: evpn-vrf
+      vlan: 3
+
+internet_vrf_firewall_ports:
+  cumulus:
+    - iface: swp3.4
+      address: 169.254.254.9/30
+  junos:
+    - iface: xe-0/0/2
+      address: 169.254.254.9/30
+      vlan: 4
+
+dcedge_ports:
+  cumulus:
+    - iface: swp4
+      address: 169.254.127.1/31
+      vrf: internet-vrf
+  junos:
+    - iface: xe-0/0/3
+      address: 169.254.127.1/31
+      vrf: internet-vrf
+
+firewall_bgp_peers_default_vrf:
+  - address: 169.254.254.2
+    remote_asn: 65533
+
+firewall_bgp_peers_evpn_vrfs:
+    - address: 169.254.254.6
+      remote_asn: 65533
+      vrf: evpn-vrf
+
+firewall_bgp_peers_internet_vrfs:
+  - address: 169.254.254.10
+    remote_asn: 65533
+
+dcedge_bgp_peers:
+  - address: 169.254.127.0
+    remote_asn: 65534
