@@ -1,5 +1,5 @@
 ---
-- name: Configure NVE interface (NXOS)
+- name: Configure NVE/VTEP (NXOS)
   connection: network_cli
   cli_config:
     config: |
