@@ -1,0 +1,3 @@
+---
+- name: Configure numbered ISL
+  include_tasks: "{{ ansible_network_os }}.yml"

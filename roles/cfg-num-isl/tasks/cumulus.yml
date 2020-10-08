@@ -1,0 +1,13 @@
+---
+- name: Configure numbered ISL ports (Cumulus)
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ item.iface }}
+      iface {{ item.iface }} inet manual
+        address {{ item.address }}
+    marker: "# {mark} {{ item }}"
+  with_items: "{{ isl_ports[ansible_network_os] }}"
+  notify:
+    - ifup interfaces

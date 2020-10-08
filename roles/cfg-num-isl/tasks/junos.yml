@@ -1,0 +1,11 @@
+---
+- name: Configure ISL ports (JunOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      delete interfaces {{ item.iface }} unit 0 family inet dhcp
+      set interfaces {{ item.iface }} unit 0 family inet address {{ item.address }}
+  with_items: "{{ isl_ports[ansible_network_os] }}"
+
+
+
