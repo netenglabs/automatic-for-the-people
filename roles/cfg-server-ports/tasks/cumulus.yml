@@ -38,8 +38,7 @@
       auto {{ l2_networks[item.vlanid].vlanif }}
       iface {{ l2_networks[item.vlanid].vlanif }}
         mtu 9164
-        virtual-address {{ l2_networks[item.vlanid].ip_address }} {{ anycast_gw_mac }}
-        vrf {{ l2_networks[item.vlanid].vrf }}
+        address-virtual {{ anycast_gw_mac }} {{ l2_networks[item.vlanid].ip_address }} 
         vlan-id {{ item.vlanid }}
         vlan-raw-device bridge
     marker: "# {mark} SVI-vlan{{ item.vlanid }}"

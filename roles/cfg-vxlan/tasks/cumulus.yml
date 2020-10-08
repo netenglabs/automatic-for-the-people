@@ -13,8 +13,7 @@
         bridge-access {{ item.vlanid }}
     marker: '# {mark} l2vni-{{ item.vlanid }}'
   with_items: "{{ l2_ports[ansible_network_os] }}"
-  when: "{{ l2_ports is defined }}"
-  tags: vxlan
+  when: l2_ports is defined
 
 - name: Configure bridge for EVPN (Cumulus)
   become: yes
@@ -27,7 +26,6 @@
         bridge-ports  {{ l2_ifs }} {{ l2vni_ifs }} {{ l3vni_ifs }}
         bridge-vids {{ vid_list }}
     marker: '# {mark} bridge'
-  tags: vxlan
   notify:
     - ifup interfaces
 
@@ -67,7 +65,6 @@
         vrf {{ item.vrf }}
     marker: "# {mark} {{ item }}"
   with_items: "{{ evpn_l3_info }}"
-  tags: vxlan, l3vni
   notify:
     - ifup interfaces
 
@@ -76,8 +73,13 @@
   blockinfile:
     path: /etc/network/interfaces
     block: |
+      auto {{ l2_networks[item.vlanid].vlanif }}
       iface {{ l2_networks[item.vlanid].vlanif }}
         vrf {{ l2_networks[item.vlanid].vrf }}
+        mtu 9164
+        address-virtual {{ anycast_gw_mac }} {{ l2_networks[item.vlanid].ip_address }} 
+        vlan-id {{ item.vlanid }}
+        vlan-raw-device bridge
     marker: "# {mark} SVI-vlan{{ item.vlanid }}"
   with_items: "{{ l2_ports[ansible_network_os] }}"
   when: l2_ports is defined
