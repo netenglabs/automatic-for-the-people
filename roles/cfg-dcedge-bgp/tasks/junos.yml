@@ -13,6 +13,6 @@
 - name: Configure BGP neighbors (Junos)
   connection: network_cli
   cli_config: |
-    set protocols bgp group ISL neighbor {{ item }} peer-as {{ ibgp_asn }}
+    set protocols bgp group ISL neighbor {{ item.peer }} peer-as {{ item.remote_asn }}
   with_items: "{{ dcedge_bgp_peers }}"
     
