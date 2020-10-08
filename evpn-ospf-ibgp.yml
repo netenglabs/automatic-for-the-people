@@ -9,15 +9,14 @@
     - role: cfg-lldp
       tags: lldp
   handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
     - name: reload FRR
       become: yes
       service:
         name: frr
         state: reloaded
-
-    - name: ifup interfaces
-      become: yes
-      command: ifup -a
 
 - hosts: spine:leaf
   gather_facts: false
@@ -40,15 +39,14 @@
       when: ansible_network_os == "eos"
       tags: reboot
   handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
     - name: reload FRR
       become: yes
       service:
         name: frr
         state: reloaded
-
-    - name: ifup interfaces
-      become: yes
-      command: ifup -a
 
 - hosts: exit
   gather_facts: false
@@ -85,16 +83,14 @@
     - cfg-fw-frr
   
   handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
     - name: restart FRR
       become: yes
       service:
         name: frr
         state: reloaded
-
-    - name: ifup interfaces
-      become: yes
-      command: ifup -a
-
 
 - hosts: dcedge
   gather_facts: false
@@ -106,16 +102,15 @@
       tags: dcedge-bgp
 
   handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
     - name: restart FRR
       become: yes
       service:
         name: frr
         state: restarted
 
-    - name: ifup interfaces
-      become: yes
-      command: ifup -a
-      
 - hosts: servers
   become: yes
   roles:
