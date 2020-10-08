@@ -56,7 +56,7 @@ evpn_l3_info:
         10.0.0.102/32
     vrf: evpn-vrf
 
-l2vni_ifs: "{{ ['vni'] | zip_longest(l2_networks | json_query('[*].vnid') | map('string') | list, fillvalue='vni') | map('join', '') | join(' ') }}"
+l2vni_ifs: "{{ ['vni'] | zip_longest(l2_ports[ansible_network_os] | json_query('[*].vlanid') | map('extract', l2_networks) | list | json_query('[*].vnid'), fillvalue='vni') | map ('join', '') | join(' ') }}"
 
 l3vni_ifs: "{{ ['vni'] | zip_longest(evpn_l3_info | json_query('[*].vnid') | map('string') | list, fillvalue='vni') | map('join', '') | join(' ') }}"
 
