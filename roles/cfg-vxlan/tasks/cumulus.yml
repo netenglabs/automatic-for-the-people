@@ -13,6 +13,7 @@
         bridge-access {{ item.vlanid }}
     marker: '# {mark} l2vni-{{ item.vlanid }}'
   with_items: "{{ l2_ports[ansible_network_os] }}"
+  when: "{{ l2_ports is defined }}"
   tags: vxlan
 
 - name: Configure bridge for EVPN (Cumulus)
