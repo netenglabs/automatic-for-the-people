@@ -1,3 +1,46 @@
 replication: ingress-replication
 ibgp_asn: 64520
+internet_vrf_asn: 65001
 lo_addr: "{{ loopback_ip.split('/')[0] }}"
+
+# l2_networks is keyed off of VLANID
+l2_networks:
+  10:
+    vnid: 10
+    vlanif: Vlan10
+    ip_address: 172.16.1.254/24
+    mcast_grp: 224.1.1.192
+    ip_subnet: 172.16.1.0/24
+    vrf: evpn-vrf
+
+  20:
+    vnid: 20
+    vlanif: Vlan20
+    ip_address: 172.16.2.254/24
+    mcast_grp: 224.1.1.192
+    ip_subnet: 172.16.2.0/24
+    vrf: evpn-vrf
+
+  30:
+    vnid: 30
+    vlanif: Vlan30
+    ip_address: 172.16.3.254/24
+    mcast_grp: 224.1.1.192
+    ip_subnet: 172.16.3.0/24    
+    vrf: evpn-vrf
+
+evpn_l3_info:
+  - vlan: 999
+    vnid: 999
+    vlanif: vlan999
+    junos_vrf_loopback_ip:
+      leaf01:
+        10.0.0.101/32
+      leaf02:
+        10.0.0.102/32
+      exit01:
+        10.0.0.121/32
+      exit02:
+        10.0.0.122/32
+    vrf: evpn-vrf
+
