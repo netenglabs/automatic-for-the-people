@@ -24,8 +24,10 @@
   connection: network_cli
   cli_config:
     config: |
-      set policy-options policy-statement SYMM-EVPN term 1 from protocol evpn
-      set policy-options policy-statement SYMM-EVPN term 1 then accept  
+      set policy-options policy-statement SYMM-EVPN term 1 from protocol direct
+      set policy-options policy-statement SYMM-EVPN term 1 then accept
+      set policy-options policy-statement SYMM-EVPN term 2 from protocol evpn
+      set policy-options policy-statement SYMM-EVPN term 2 then accept
 
 - name: Configure L3VNI (Junos)
   connection: network_cli
@@ -48,5 +50,5 @@
     config: |
       set routing-instances {{ l2_networks[item.vlanid].vrf }} interface irb.{{ l2_networks[item.vlanid].vnid }}
   with_items: "{{ l2_ports[ansible_network_os] }}"
-  when: "{{ l2_ports is defined }}"
+  when: l2_ports is defined
 
