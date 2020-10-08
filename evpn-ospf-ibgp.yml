@@ -68,7 +68,6 @@
     - name: ifup interfaces
       become: yes
       command: ifup -a
-
     - name: reload FRR
       become: yes
       service:
@@ -90,7 +89,7 @@
       become: yes
       service:
         name: frr
-        state: reloaded
+        state: restarted
 
 - hosts: dcedge
   gather_facts: false
