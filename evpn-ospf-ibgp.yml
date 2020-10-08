@@ -65,15 +65,15 @@
     - role: cfg-exit-bgp
       tags: exit-bgp
   handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
+
     - name: reload FRR
       become: yes
       service:
         name: frr
         state: reloaded
-
-    - name: ifup interfaces
-      become: yes
-      command: ifup -a
 
 - hosts: firewall
   become: yes
