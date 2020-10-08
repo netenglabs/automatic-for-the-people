@@ -31,6 +31,20 @@
   notify:
     - ifup interfaces
 
+- name: Configure VRF (Cumulus)
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ l2_networks[item.vlanid].vrf }}
+      iface {{ l2_networks[item.vlanid].vrf }}
+        vrf-table auto
+    marker: "# {mark} vrf-{l2_networks[item.vlanid].vrf}"
+  with_items: "{{ l2_ports[ansible_network_os] }}"
+  when: l2_ports is defined
+  notify:
+    - ifup interfaces
+
 - name: Configure L3VNI (Cumulus)
   become: yes
   blockinfile:
@@ -54,5 +68,18 @@
     marker: "# {mark} {{ item }}"
   with_items: "{{ evpn_l3_info }}"
   tags: vxlan, l3vni
+  notify:
+    - ifup interfaces
+
+- name: Move SVIs into appropriate VRF
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      iface {{ l2_networks[item.vlanid].vlanif }}
+        vrf {{ l2_networks[item.vlanid].vrf }}
+    marker: "# {mark} SVI-vlan{{ item.vlanid }}"
+  with_items: "{{ l2_ports[ansible_network_os] }}"
+  when: l2_ports is defined
   notify:
     - ifup interfaces

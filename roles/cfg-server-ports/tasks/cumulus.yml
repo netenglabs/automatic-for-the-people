@@ -30,20 +30,6 @@
   notify:
     - ifup interfaces
 
-- name: Configure VRF (Cumulus)
-  become: yes
-  blockinfile:
-    path: /etc/network/interfaces
-    block: |
-      auto {{ l2_networks[item.vlanid].vrf }}
-      iface {{ l2_networks[item.vlanid].vrf }}
-        vrf-table auto
-    marker: "# {mark} vrf-{l2_networks[item.vlanid].vrf}"
-  with_items: "{{ l2_ports[ansible_network_os] }}"
-  tags: ifcfg  
-  notify:
-    - ifup interfaces
-
 - name: Configure SVI (Cumulus)
   become: yes
   blockinfile:
