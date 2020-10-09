@@ -11,16 +11,20 @@
     config: |
       set routing-instance {{ item.vrf }} routing-options router-id {{ item.junos_vrf_loopback_ip[inventory_hostname].split('/')[0] }}
       set routing-instance {{ item.vrf }} routing-options autonomous-system {{ ibgp_asn }}
+      set policy-options policy-statement SUMMARY-EVPN-RT term 1 from route-filter 172.16.0.0/16 prefix-length-range /24-/24
+      set policy-options policy-statement SUMMARY-EVPN-RT term 1 then accept
       set routing-instance {{ item.vrf }} protocols bgp group firewall type external
+      set routing-instances evpn-vrf protocols bgp group firewall export SUMMARY-EVPN-RT
   with_items: "{{ evpn_l3_info }}"
 
 - name: eBGP base config for external VRF (Junos)
   connection: network_cli
   cli_config:
     config: |
-      set routing-instance {{ internet_vrf }} routing-options autonomous-system {{ ibgp_asn }}
+      set routing-instance {{ internet_vrf }} routing-options autonomous-system {{ internet_vrf_asn }}
       set routing-instance {{ internet_vrf }} routing-options router-id {{ internet_vrf_firewall_ports[ansible_network_os][0].address.split('/')[0] }}
       set routing-instance {{ internet_vrf }} protocols bgp group dcedge type external
+      set routing-instance {{ internet_vrf }} protocols bgp group dcedge family inet unicast loops 1
 
 - name: Assign neighbors to FW in default VRF BGP (Junos)
   connection: network_cli
