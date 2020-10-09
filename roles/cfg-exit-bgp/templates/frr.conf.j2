@@ -55,6 +55,7 @@ router bgp {{ ibgp_asn }}
 {% for vrf in evpn_vrfs %}
 router bgp {{ ibgp_asn }} vrf {{ vrf }}
  bgp router-id {{ lo_addr }}
+ no bgp default ipv4-unicast
  neighbor ISL peer-group
  neighbor ISL remote-as external
  {% for port in evpn_vrf_firewall_ports[ansible_network_os] %}
@@ -63,13 +64,18 @@ router bgp {{ ibgp_asn }} vrf {{ vrf }}
  {% endif %}
  {% endfor %}
 !
+ address-family ipv4 unicast
+  neighbor ISL activate
+  {% for item in l2_networks %}
+  aggregate-address {{ l2_networks[item].ip_subnet }} summary-only
+  {% endfor %}
  address-family l2vpn evpn
   advertise ipv4 unicast
  exit-address-family
 !
 {% endfor %}
 !
-router bgp 65001 vrf internet-vrf
+router bgp {{ internet_vrf_asn }} vrf {{ internet_vrf }}
  bgp router-id {{ lo_addr }}
  neighbor EDGE peer-group
  neighbor EDGE remote-as external
