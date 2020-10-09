@@ -24,5 +24,7 @@ isl_ports:
       address: 169.254.127.2/31      
 
 dcedge_bgp_peers:
-  - 169.254.127.1
-  - 169.254.127.3
+  - peer: 169.254.127.1
+    remote_asn: "{{ internet_vrf_asn }}"
+  - peer: 169.254.127.3
+    remote_asn: "{{ internet_vrf_asn }}"
