@@ -10,4 +10,4 @@
       router ospf
          ospf router-id {{ loopback_ip.split('/')[0] }}
          passive-interface lo
-
+    marker: '!{mark} ospf'

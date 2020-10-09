@@ -24,7 +24,7 @@
       iface bridge
         bridge-vlan-aware yes
         bridge-ports  {{ l2_ifs }} {{ l2vni_ifs }} {{ l3vni_ifs }}
-        bridge-vids {{ vid_list }}
+        bridge-vids {{ vid_list | join(' ') }}
     marker: '# {mark} bridge'
   notify:
     - ifup interfaces
@@ -34,12 +34,11 @@
   blockinfile:
     path: /etc/network/interfaces
     block: |
-      auto {{ l2_networks[item.vlanid].vrf }}
-      iface {{ l2_networks[item.vlanid].vrf }}
+      auto {{ item.vrf }}
+      iface {{ item.vrf }}
         vrf-table auto
-    marker: "# {mark} vrf-{l2_networks[item.vlanid].vrf}"
-  with_items: "{{ l2_ports[ansible_network_os] }}"
-  when: l2_ports is defined
+    marker: '# {mark} {{ item.vrf }}'
+  with_items: "{{ evpn_l3_info }}"
   notify:
     - ifup interfaces
 

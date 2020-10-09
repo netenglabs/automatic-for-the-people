@@ -24,7 +24,7 @@
       iface bridge
         bridge-vlan-aware yes
         bridge-ports {{ l2_ifs }}
-        bridge-vids {{ vid_list }}
+        bridge-vids {{ vid_list | join(' ') }}
     marker: '# {mark} bridge'
   tags: ifcfg
   notify:
