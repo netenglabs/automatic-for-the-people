@@ -28,6 +28,7 @@
       set policy-options policy-statement SYMM-EVPN term 1 then accept
       set policy-options policy-statement SYMM-EVPN term 2 from protocol evpn
       set policy-options policy-statement SYMM-EVPN term 2 then accept
+  when: inventory_hostname not in groups['spine']
 
 - name: Configure L3VNI (Junos)
   connection: network_cli
@@ -43,6 +44,7 @@
       set routing-instances {{ item.vrf }} protocols evpn ip-prefix-routes encapsulation vxlan vni {{ item.vnid }}
       set routing-instances {{ item.vrf }} protocols evpn ip-prefix-routes export SYMM-EVPN
   with_items: "{{ evpn_l3_info }}"
+  when: inventory_hostname not in groups['spine']
 
 - name: Move SVIs into appropriate VRF
   connection: network_cli
