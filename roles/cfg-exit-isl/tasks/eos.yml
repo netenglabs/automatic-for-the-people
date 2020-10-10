@@ -1,23 +1,32 @@
 ---
-- name: Configure ISL ports (EOS)
+- name: Make FW ISL port routed (EOS)
   connection: network_cli
   cli_config:
     config: |
-      int {{ item }}
-         no switchport
-         no shut
-         ip address unnumbered Loopback 0
-         mtu 9200
-  with_items: "{{ isl_ports[ansible_network_os] }}"
-  tags: ospf-isl-cfg
+      int {{ item.iface.split('.')[0] }}
+        no switchport
+        no shut
+  with_items: "{{ default_vrf_firewall_ports[ansible_network_os] }}"
 
-- name: Configure OSPF Parameters (EOS)
+- name: Configure Internet VRF (EOS)
   connection: network_cli
   cli_config:
     config: |
-      int {{ item }}
-         ip ospf network point-to-point
-         ip ospf area 0.0.0.0
-  with_items: "{{ isl_ports[ansible_network_os] }}"
-  tags: ospf-isl-cfg
+      vrf instance {{ internet_vrf }}
+      ip routing vrf {{ internet_vrf }}
 
+- name: Configure FW ports (EOS)
+  connection: network_cli
+  cli_config:
+    config: "{{ lookup('template', 'templates/eos.j2') }}"
+
+- name: Configure DCEdge port (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ item.iface }}
+        no switchport
+        no shut
+        vrf {{ item.vrf }}
+        ip address {{ item.address }}
+  with_items: "{{ dcedge_ports[ansible_network_os] }}"

@@ -19,7 +19,7 @@
         exit-address-family
     marker: '!{mark} base-bgp'
   notify:
-    - reload frr
+    - restart frr
 
 - name: Configure BGP neighbors (Cumulus)
   become: yes
@@ -30,6 +30,4 @@
     marker: '!{mark} { item }'
   with_items: "{{ dcedge_bgp_peers }}"
   notify:
-    - reload frr
-    
-
+    - restart frr

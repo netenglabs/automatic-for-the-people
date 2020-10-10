@@ -1,0 +1,60 @@
+---
+- name: eBGP base config for FW in default VRF (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        neighbor FW peer-group
+        address-family ipv4
+          neighbor FW activate
+
+- name: Assign neighbors to FW in default VRF BGP (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        neighbor {{ item.address }} remote-as {{ item.remote_asn }}
+        neighbor {{ item.address }} peer group FW
+  with_items: "{{ firewall_bgp_peers_default_vrf }}"
+
+- name: eBGP aggregate address for FW in EVPN VRFs (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vrf {{ l2_networks[item].vrf }}
+          address-family ipv4
+            aggregate-address {{ l2_networks[item].ip_subnet }} summary-only
+  with_items: "{{ l2_networks }}"
+
+- name: Assign neighbors to FW in EVPN VRfs (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vrf {{ item.vrf }}
+          neighbor {{ item.address }} remote-as {{ item.remote_asn }}
+          neighbor {{ item.address }} peer group FW
+  with_items: "{{ firewall_bgp_peers_evpn_vrfs }}"
+  
+- name: Assign neighbors to FW in internet VRfs (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vrf {{ internet_vrf }}
+          neighbor {{ item.address }} remote-as {{ item.remote_asn }}
+          neighbor {{ item.address }} peer group FW
+          address-family ipv4
+             neighbor FW activate
+             neighbor FW allowas-in 1
+  with_items: "{{ firewall_bgp_peers_internet_vrfs }}"
+
+- name: Assign neighbors to DCEdge routers (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vrf {{ internet_vrf }}
+          neighbor {{ item.address }} remote-as {{ item.remote_asn }}
+  with_items: "{{ dcedge_bgp_peers }}"

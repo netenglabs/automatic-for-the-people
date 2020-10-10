@@ -7,26 +7,14 @@
          switchport access vlan {{ item.vlanid }}
          mtu 9164
   with_items: " {{ l2_ports[ansible_network_os] }}"
-  tags: ifcfg
-
-- name: configure VRF (EOS)
-  connection: network_cli
-  cli_config:
-    config: |
-      vrf instance {{ l2_networks[item.vlanid].vrf }}
-      ip routing vrf {{ l2_networks[item.vlanid].vrf }}
-  with_items: "{{ l2_ports[ansible_network_os] }}"
-  tags: ifcfg
 
 - name: configure SVI (EOS)
   connection: network_cli
   cli_config:
     config: |
-      int {{ l2_networks[item.vlanid][vlanif] }}
+      int {{ l2_networks[item.vlanid].vlanif }}
         no shut
         mtu 9164
-        vrf {{ l2_networks[item.vlanid][vrf] }}
-        ip address virtual {{ l2_networks[item.vlanid][ip_address] }}
+        ip address virtual {{ l2_networks[item.vlanid].ip_address }}
   with_items: "{{ l2_ports[ansible_network_os] }}"
-  tags: ifcfg
 

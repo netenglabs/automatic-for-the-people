@@ -6,11 +6,11 @@
       router bgp {{ ibgp_asn }}
         bgp log-neighbor-changes
         router-id {{ lo_addr }}
-         no bgp default ipv4-unicast
+        no bgp default ipv4-unicast
         neighbor RR peer-group
         neighbor RR remote-as {{ ibgp_asn }}
         neighbor RR send-community extended
-  when: inventory_hostname in groups['leaf']
+  when: inventory_hostname not in groups['spine']
   tags: evpn
 
 - name: iBGP base config for spines (EOS)
@@ -20,7 +20,7 @@
       router bgp {{ ibgp_asn }}
         bgp log-neighbor-changes
         router-id {{ lo_addr }}
-         no bgp default ipv4-unicast
+        no bgp default ipv4-unicast
         neighbor RR peer-group
         neighbor RR remote-as {{ ibgp_asn }}
         neighbor RR send-community extended
@@ -33,14 +33,13 @@
   cli_config:
     config: |
       router bgp {{ ibgp_asn }}
-        vlan {{ item.id }}
+        vlan {{ item.vlanid }}
            rd {{ lo_addr }}:{{ item.vlanid }}
            route-target import auto {{ ibgp_asn }}
            route-target export auto
            redistribute learned
   with_items: "{{ l2_ports[ansible_network_os] }}"
-  when: inventory_hostname in groups['leaf']
-  tags: evpn
+  when: l2_ports is defined
 
 - name: iBGP neighbor config (EOS)
   connection: network_cli
@@ -49,7 +48,6 @@
       router bgp {{ ibgp_asn }}
          neighbor {{ item }} peer group RR
   with_items: "{{ evpn_peers }}"
-  tags: evpn
 
 - name: Activate EVPN AFI/SAFI (EOS)
   connection: network_cli
@@ -59,7 +57,6 @@
         address-family evpn
           neighbor {{ item }} activate
   with_items: "{{ evpn_peers }}"
-  tags: evpn
 
 - name: Add L3VNI advertisement (EOS)
   connection: network_cli
@@ -71,5 +68,16 @@
          route-target import evpn {{ ibgp_asn }}:{{ item.vnid }}
          route-target export evpn {{ ibgp_asn }}:{{ item.vnid }}         
   with_items: "{{ evpn_l3_info }}"
-  when: inventory_hostname in groups['leaf']
-  tags: evpn
+  when: inventory_hostname not in groups['spine']
+
+- name: iBGP EVPN VRFs config to advertise subnet route (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vrf {{ l2_networks[item.vlanid].vrf }}
+          address-family ipv4
+            network {{ l2_networks[item.vlanid].ip_subnet  }}
+  with_items: "{{ l2_ports[ansible_network_os] }}"
+  when: l2_ports is defined
+        

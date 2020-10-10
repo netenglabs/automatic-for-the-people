@@ -16,6 +16,11 @@ default_vrf_firewall_ports:
       address: 169.254.253.1/30
       vrf: default
       vlan: 2
+  eos:
+    - iface: Eth3.2
+      address: 169.254.253.1/30
+      vrf: default
+      vlan: 2
 
 evpn_vrf_firewall_ports:
   cumulus:
@@ -29,6 +34,11 @@ evpn_vrf_firewall_ports:
       vlan: 3
   nxos:
     - iface: Eth1/3.3
+      address: 169.254.253.5/30
+      vrf: evpn-vrf
+      vlan: 3
+  eos:
+    - iface: Eth3.3
       address: 169.254.253.5/30
       vrf: evpn-vrf
       vlan: 3
@@ -48,6 +58,11 @@ internet_vrf_firewall_ports:
       address: 169.254.253.9/30
       vlan: 4
       vrf: internet-vrf
+  eos:
+    - iface: Eth3.4
+      address: 169.254.253.9/30
+      vlan: 4
+      vrf: internet-vrf
 
 dcedge_ports:
   cumulus:
@@ -60,7 +75,11 @@ dcedge_ports:
       vrf: internet-vrf
   nxos:
     - iface: Eth1/4
-      address: 169.254.127.1/31
+      address: 169.254.127.3/31
+      vrf: internet-vrf
+  eos:
+    - iface: Eth4
+      address: 169.254.127.3/31
       vrf: internet-vrf
 
 firewall_bgp_peers_default_vrf:

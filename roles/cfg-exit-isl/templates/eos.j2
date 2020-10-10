@@ -1,0 +1,16 @@
+{% for port in default_vrf_firewall_ports[ansible_network_os] %}
+int {{ port.iface }}
+  no shut
+  encapsulation dot1q vlan {{ port.vlan }}
+  ip address {{ port.address }}
+{% endfor %}
+!
+{% for portlist in [evpn_vrf_firewall_ports, internet_vrf_firewall_ports] %}
+{% for port in portlist[ansible_network_os] %}
+int {{ port.iface }}
+  no shut
+  vrf {{ port.vrf }}
+  encapsulation dot1q vlan {{ port.vlan }}  
+  ip address {{ port.address }}
+{% endfor %}
+{% endfor %}
