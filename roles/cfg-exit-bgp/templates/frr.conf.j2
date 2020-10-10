@@ -75,16 +75,23 @@ router bgp {{ ibgp_asn }} vrf {{ vrf }}
 !
 {% endfor %}
 !
-router bgp {{ internet_vrf_asn }} vrf {{ internet_vrf }}
+router bgp {{ ibgp_asn }} vrf {{ internet_vrf }}
  bgp router-id {{ lo_addr }}
+ no bgp default ipv4-unicast
  neighbor EDGE peer-group
  neighbor EDGE remote-as external
  neighbor EDGE bfd
+ neighbor FW peer-group
+ neighbor FW bfd
  {% for port in internet_vrf_firewall_ports[ansible_network_os] %}
- neighbor {{ port.iface }} interface peer-group EDGE
+ neighbor {{ port.iface }} interface peer-group FW
  {% endfor %}
  {% for port in dcedge_ports[ansible_network_os] %}
  neighbor {{ port.iface }} interface peer-group EDGE
  {% endfor %}
+ address-family ipv4 unicast
+   neighbor FW activate
+   neighbor EDGE activate
+   neighbor EDGE allowas-in 1
 !
 !
