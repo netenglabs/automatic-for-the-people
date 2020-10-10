@@ -64,6 +64,10 @@
       tags: evpn
     - role: cfg-exit-bgp
       tags: exit-bgp
+    - role: cfg-save
+    - role: cfg-reboot
+      when: ansible_network_os == "eos"
+      tags: reboot
   handlers:
     - name: ifup interfaces
       become: yes
@@ -99,7 +103,7 @@
       tags: dcedge-ifs
     - role: cfg-dcedge-bgp
       tags: dcedge-bgp
-
+    - role: cfg-save
   handlers:
     - name: ifup interfaces
       become: yes
