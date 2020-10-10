@@ -2,6 +2,7 @@
 {% for port in default_vrf_firewall_ports[ansible_network_os] %}
 int {{ port.iface }}
   no shut
+  encapsulation dot1q {{ port.vlan }}
   ip address {{ port.address }}
 {% endfor %}
 
@@ -10,6 +11,7 @@ int {{ port.iface }}
 int {{ port.iface }}
   no shut
   vrf member {{ port.vrf }}
+  encapsulation dot1q {{ port.vlan }}  
   ip address {{ port.address }}
 {% endfor %}
 {% endfor %}
