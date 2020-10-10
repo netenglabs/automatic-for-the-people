@@ -82,6 +82,7 @@ router bgp {{ ibgp_asn }} vrf {{ internet_vrf }}
  neighbor EDGE remote-as external
  neighbor EDGE bfd
  neighbor FW peer-group
+ neighbor FW remote-as external
  neighbor FW bfd
  {% for port in internet_vrf_firewall_ports[ansible_network_os] %}
  neighbor {{ port.iface }} interface peer-group FW
