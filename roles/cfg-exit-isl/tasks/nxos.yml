@@ -1,24 +1,34 @@
-- name: Configure ISL ports (NXOS)
+---
+- name: Make FW ISL port routed (NXOS)
   connection: network_cli
   cli_config:
     config: |
-      int {{ item }}
-         no switchport
-         no shut
-         ip unnumbered loopback0
-         mtu 9200
-  with_items: "{{ isl_ports[ansible_network_os] }}"
-  tags: ospf-isl-cfg
+      int {{ item.iface.split('.')[0] }}
+        no switchport
+        no shut
+  with_items: "{{ default_vrf_firewall_ports[ansible_network_os] }}"
 
-- name: Configure OSPF paramaters (NXOS)
+- name: Configure Internet VRF (NXOS)
   connection: network_cli
   cli_config:
     config: |
-      int {{ item }}
-         medium p2p
-         ip router ospf UNDERLAY area 0.0.0.0
-  with_items: "{{ isl_ports[ansible_network_os] }}"
-  tags: ospf-isl-cfg
+      vrf context {{ internet_vrf }}
+        rd auto
+        address-family ipv4 unicast
+           route-target both auto
 
-      
+- name: Configure FW ports (NXOS)
+  connection: network_cli
+  cli_config:
+    config: "{{ lookup('template', 'templates/nxos.j2') }}"
 
+- name: Configure DCEdge port (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ item.iface }}
+        no switchport
+        no shut
+        vrf member {{ item.vrf }}
+        ip address {{ item.address }}
+  with_items: "{{ dcedge_ports[ansible_network_os] }}"

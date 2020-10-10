@@ -1,0 +1,16 @@
+! Configure firewall ports in default VRF
+{% for port in default_vrf_firewall_ports[ansible_network_os] %}
+int {{ port.iface }}
+  no shut
+  ip address {{ port.address }}
+{% endfor %}
+
+{% for portlist in [evpn_vrf_firewall_ports, internet_vrf_firewall_ports] %}
+{% for port in portlist[ansible_network_os] %}
+int {{ port.iface }}
+  no shut
+  vrf member {{ port.vrf }}
+  ip address {{ port.address }}
+{% endfor %}
+{% endfor %}
+

@@ -1,0 +1,64 @@
+---
+- name: eBGP base config for FW in default VRF (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        template peer FIREWALL
+          address-family ipv4 unicast
+            soft-reconfiguration inbound
+
+- name: Assign neighbors to FW in default VRF BGP (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        neighbor {{ item.address }}
+          remote-as {{ item.remote_asn }}
+          inherit peer FIREWALL
+  with_items: "{{ firewall_bgp_peers_default_vrf }}"
+
+- name: eBGP aggregate address for FW in EVPN VRFs (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vrf {{ l2_networks[item].vrf }}
+          address-family ipv4 unicast
+            aggregate-address {{ l2_networks[item].ip_subnet }} summary-only
+  with_items: "{{ l2_networks }}"
+
+- name: Assign neighbors to FW in EVPN VRfs (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vrf {{ item.vrf }}
+          neighbor {{ item.address }}
+            remote-as {{ item.remote_asn }}
+            inherit peer FIREWALL
+  with_items: "{{ firewall_bgp_peers_evpn_vrfs }}"
+  
+- name: Assign neighbors to FW in internet VRfs (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vrf {{ internet_vrf }}
+          neighbor {{ item.address }}
+            remote-as {{ item.remote_asn }}
+            inherit peer FIREWALL
+            address-family ipv4 unicast
+              allowas-in 1
+  with_items: "{{ firewall_bgp_peers_internet_vrfs }}"
+
+- name: Assign neighbors to DCEdge routers (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      router bgp {{ ibgp_asn }}
+        vrf {{ internet_vrf }}
+          neighbor {{ item.address }}
+            remote-as {{ item.remote_asn }}
+            inherit peer FIREWALL
+  with_items: "{{ dcedge_bgp_peers }}"

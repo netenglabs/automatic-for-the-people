@@ -7,16 +7,15 @@
         no shutdown
         host-reachability protocol bgp
         source-interface loopback0
-  when: inventory_hostname in groups['leaf']
+  when: inventory_hostname not in groups['spine']
   tags: vxlan
 
 - name: Configure anycast gateway (NXOS)
   connection: network_cli
   cli_config:
     config: |
-      fabric forwarding anycast-gateway-mac {{ anycast_gw_mac }}
-  when: inventory_hostname in groups['leaf']
-  tags: vxlan
+      fabric forwarding anycast-gateway-mac {{ nxos_fabric_anycast_gw_mac }}
+  when: inventory_hostname not in groups['spine']
 
 - name: Reconfigure access-list for arp suppression (NXOS)
   connection: network_cli
@@ -24,7 +23,6 @@
     config: |
       hardware access-list tcam region vpc-convergence 0
       hardware access-list tcam region arp-ether 256
-  tags: vxlan
 
 - name: Configure VNIs with mcast (NXOS)
   connection: network_cli
@@ -40,8 +38,7 @@
          mcast-group {{ item.mcast_grp }}
 
   with_items: "{{ l2_ports[ansible_network_os] }}"
-  when: inventory_hostname in groups['leaf'] and replication == 'mcast'
-  tags: vxlan
+  when: l2_ports is defined and replication == 'mcast'
 
 - name: Configure VNIs with ingress replication (NXOS)
   connection: network_cli
@@ -57,8 +54,7 @@
          ingress-replication protocol bgp
 
   with_items: "{{ l2_ports[ansible_network_os] }}"
-  when: inventory_hostname in groups['leaf'] and replication != 'mcast'
-  tags: vxlan
+  when: l2_ports is defined and replication != 'mcast'
 
 - name: Configure L3VNI (NXOS)
   connection: network_cli
@@ -75,8 +71,8 @@
            route-target both auto evpn
 
       interface {{ item.vlanif }}
-        no shut
         vrf member {{ item.vrf }}
+        no shut
         ip forward
         fabric forwarding mode anycast-gateway
 
@@ -85,6 +81,16 @@
         member vni {{ item.vnid }} associate-vrf
 
   with_items: "{{ evpn_l3_info }}"
-  when: inventory_hostname in groups['leaf']
-  tags: vxlan, l3vni
+  when: inventory_hostname not in groups['spine']
 
+- name: Move SVIs into appropriate VRF
+  connection: network_cli
+  cli_config:
+    config: |
+      int Vlan{{ item.vlanid }}
+        vrf member {{ l2_networks[item.vlanid].vrf }}
+        no shut
+        ip address {{ l2_networks[item.vlanid].ip_address }}
+        fabric forwarding mode anycast-gateway
+  with_items: "{{ l2_ports[ansible_network_os] }}"
+  when: l2_ports is defined

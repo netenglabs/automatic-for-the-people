@@ -9,8 +9,7 @@
          route-target import auto
          route-target export auto
   with_items: "{{ l2_ports[ansible_network_os] }}"
-  when: inventory_hostname in groups['leaf']
-  tags: evpn
+  when: l2_ports is defined
       
 - name: iBGP base config (NXOS)
   connection: network_cli
@@ -41,7 +40,6 @@
            address-family l2vpn evpn
               send-community
               send-community extended
-  tags: evpn
 
 - name: iBGP neighbor config for leafs (NXOS)
   connection: network_cli
@@ -51,8 +49,7 @@
         neighbor {{ item }}
           inherit peer VXLAN_SPINE
   with_items: "{{ evpn_peers }}"
-  when: inventory_hostname in groups['leaf']
-  tags: evpn
+  when: inventory_hostname not in groups['spine']
 
 - name: iBGP neighbor config for spines (NXOS)
   connection: network_cli
@@ -63,7 +60,6 @@
            inherit peer VXLAN_LEAF
   with_items: "{{ evpn_peers }}"
   when: inventory_hostname in groups['spine']  
-  tags: evpn
 
 - name: Advertise L3 GW address (NXOS)
   connection: network_cli
@@ -77,5 +73,4 @@
             advertise l2vpn evpn
 
   with_items: "{{ l2_ports[ansible_network_os] }}"
-  when: inventory_hostname in groups['leaf']
-  tags: nve, nvel3
+  when: l2_ports is defined

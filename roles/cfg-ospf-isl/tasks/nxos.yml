@@ -1,3 +1,4 @@
+---
 - name: Configure ISL ports (NXOS)
   connection: network_cli
   cli_config:
@@ -5,6 +6,7 @@
       int {{ item }}
          no switchport
          no shut
+         medium p2p
          ip unnumbered loopback0
          mtu 9200
   with_items: "{{ isl_ports[ansible_network_os] }}"
@@ -15,7 +17,6 @@
   cli_config:
     config: |
       int {{ item }}
-         medium p2p
          ip router ospf UNDERLAY area 0.0.0.0
   with_items: "{{ isl_ports[ansible_network_os] }}"
   tags: ospf-isl-cfg

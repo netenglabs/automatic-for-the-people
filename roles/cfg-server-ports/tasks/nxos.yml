@@ -5,7 +5,7 @@
     config: |
       int {{ item.iface }}
         switchport access vlan {{ item.vlanid }}
-        mtu 9164
+        mtu 9200
   with_items: "{{ l2_ports[ansible_network_os] }}"
   tags: ifcfg
 
@@ -15,8 +15,8 @@
     config: |
      interface {{ l2_networks[item.vlanid].vlanif }}
        no shutdown
-       mtu 9164
-       ip address {{ l2_networks[item.vlan_id].ip_address }}
+       mtu 9200
+       ip address {{ l2_networks[item.vlanid].ip_address }}
 
   with_items: "{{ l2_ports[ansible_network_os] }}"
   tags: ifcfg, vlan

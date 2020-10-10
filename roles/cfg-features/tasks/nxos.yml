@@ -12,4 +12,10 @@
       nv overlay evpn
       feature nv overlay
       feature vn-segment-vlan-based
-  tags: cfg-features
+
+- name: Set systemwide Jumbo MTU size (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      system jumbomtu 9200
+
