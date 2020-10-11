@@ -1,0 +1,7 @@
+---
+- name: Reload the system
+  connection: network_cli
+  cli_config:
+    config: |
+      reload in 5
+

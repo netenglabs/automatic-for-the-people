@@ -1,0 +1,9 @@
+---
+- name: Reload the system
+  connection: network_cli
+  cli_command:
+    command: |
+      reload now
+
+- name: reset the connection 
+  meta: reset_connection
