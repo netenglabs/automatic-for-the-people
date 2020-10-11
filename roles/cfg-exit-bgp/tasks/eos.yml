@@ -57,4 +57,7 @@
       router bgp {{ ibgp_asn }}
         vrf {{ internet_vrf }}
           neighbor {{ item.address }} remote-as {{ item.remote_asn }}
+          neighbor {{ item.address }} peer group FW
+          address-family ipv4
+             neighbor FW activate
   with_items: "{{ dcedge_bgp_peers }}"
