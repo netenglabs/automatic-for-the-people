@@ -1,0 +1,5 @@
+---
+- name: Configure eBGP underlay (Junos)
+  connection: network_cli
+  cli_config:
+    config: "{{ lookup('template', 'junos.j2') }}"

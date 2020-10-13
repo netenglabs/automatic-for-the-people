@@ -1,0 +1,18 @@
+# Only advertise loopback IP
+set policy-options policy-statement LOOPBACKS_ONLY term 1 from interface lo0
+set policy-options policy-statement LOOPBACKS_ONLY term 1 then accept
+#
+set routing-options router-id {{ lo_addr }}
+#
+set protocols bgp group UNDERLAY type external
+{% if use_local_as %}
+set protocols bgp group UNDERLAY local-as {{ ebgp_asn[inventory_hostname] }}
+{% endif %}
+set protocols bgp group UNDERLAY hold-time 10
+set protocols bgp group UNDERLAY family inet unicast
+set protocols bgp group UNDERLAY export LOOPBACKS_ONLY
+#
+{% for value in ebgp_cfg[ansible_network_os][inventory_hostname].values() %}
+set protocols bgp group UNDERLAY neighbor {{ value.peer }} peer-as {{ value.remote_asn }}
+{% endfor %}
+#

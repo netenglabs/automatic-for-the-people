@@ -14,8 +14,8 @@
         neighbor UNDERLAY local-as {{ ebgp_asn[inventory_hostname] }} no-prepend replace-as
         {% endif %}
         neighbor UNDERLAY bfd
-        {% for nbr in isl_ports[ansible_network_os] %}
-        neighbor {{ nbr }} interface peer-group UNDERLAY
+        {% for value in ebgp_cfg[ansible_network_os][inventory_hostname].values() %}
+        neighbor {{ value.peer }} peer-group UNDERLAY
         {% endfor %}
         address-family ipv4 unicast
           neighbor UNDERLAY activate

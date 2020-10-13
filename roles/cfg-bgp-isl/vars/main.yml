@@ -29,11 +29,11 @@ ebgp_cfg:
       Eth3:
         address: 169.254.3.4/31
         peer: 169.254.3.5
-        remote_asn: 65103
+        remote_asn: 65201
       Eth4:
         address: 169.254.3.6/31
         peer: 169.254.3.7
-        remote_asn: 65104
+        remote_asn: 65202
     leaf01:
       Eth1:
         address: 169.254.2.1/31
@@ -100,11 +100,11 @@ ebgp_cfg:
       Eth1/3:
         address: 169.254.3.4/31
         peer: 169.254.3.5
-        remote_asn: 65103
+        remote_asn: 65201
       Eth1/4:
         address: 169.254.3.6/31
         peer: 169.254.3.7
-        remote_asn: 65104
+        remote_asn: 65202
     leaf01:
       Eth1/1:
         address: 169.254.2.1/31
@@ -138,6 +138,148 @@ ebgp_cfg:
         peer: 169.254.2.6
         remote_asn: 65000
       Eth1/2:
+        address: 169.254.3.7/31
+        peer: 169.254.3.6
+        remote_asn: 65000
+  junos:
+    spine01:
+      xe-0/0/0:
+        address: 169.254.2.0/31
+        peer: 169.254.2.1
+        remote_asn: 65101
+      xe-0/0/1:
+        address: 169.254.2.2/31
+        peer: 169.254.2.3
+        remote_asn: 65102
+      xe-0/0/2:
+        address: 169.254.2.4/31
+        peer: 169.254.2.5
+        remote_asn: 65201
+      xe-0/0/3:
+        address: 169.254.2.6/31
+        peer: 169.254.2.7
+        remote_asn: 65202
+    spine02:
+      xe-0/0/0:
+        address: 169.254.3.0/31
+        peer: 169.254.3.1
+        remote_asn: 65101
+      xe-0/0/1:
+        address: 169.254.3.2/31
+        peer: 169.254.3.3
+        remote_asn: 65102
+      xe-0/0/2:
+        address: 169.254.3.4/31
+        peer: 169.254.3.5
+        remote_asn: 65201
+      xe-0/0/3:
+        address: 169.254.3.6/31
+        peer: 169.254.3.7
+        remote_asn: 65202
+    leaf01:
+      xe-0/0/0:
+        address: 169.254.2.1/31
+        peer: 169.254.2.0
+        remote_asn: 65000
+      xe-0/0/1:
+        address: 169.254.3.1/31
+        peer: 169.254.3.0
+        remote_asn: 65000
+    leaf02:
+      xe-0/0/0:
+        address: 169.254.2.3/31
+        peer: 169.254.2.2
+        remote_asn: 65000
+      xe-0/0/1:
+        address: 169.254.3.3/31
+        peer: 169.254.3.2
+        remote_asn: 65000
+    exit01:
+      xe-0/0/0:
+        address: 169.254.2.5/31
+        peer: 169.254.2.4
+        remote_asn: 65000
+      xe-0/0/1:
+        address: 169.254.3.5/31
+        peer: 169.254.3.4
+        remote_asn: 65000
+    exit02:
+      xe-0/0/0:
+        address: 169.254.2.7/31
+        peer: 169.254.2.6
+        remote_asn: 65000
+      xe-0/0/1:
+        address: 169.254.3.7/31
+        peer: 169.254.3.6
+        remote_asn: 65000
+  cumulus:
+    spine01:
+      swp1:
+        address: 169.254.2.0/31
+        peer: 169.254.2.1
+        remote_asn: 65101
+      swp2:
+        address: 169.254.2.2/31
+        peer: 169.254.2.3
+        remote_asn: 65102
+      swp3:
+        address: 169.254.2.4/31
+        peer: 169.254.2.5
+        remote_asn: 65201
+      swp4:
+        address: 169.254.2.6/31
+        peer: 169.254.2.7
+        remote_asn: 65202
+    spine02:
+      swp1:
+        address: 169.254.3.0/31
+        peer: 169.254.3.1
+        remote_asn: 65101
+      swp2:
+        address: 169.254.3.2/31
+        peer: 169.254.3.3
+        remote_asn: 65102
+      swp3:
+        address: 169.254.3.4/31
+        peer: 169.254.3.5
+        remote_asn: 65201
+      swp4:
+        address: 169.254.3.6/31
+        peer: 169.254.3.7
+        remote_asn: 65202
+    leaf01:
+      swp1:
+        address: 169.254.2.1/31
+        peer: 169.254.2.0
+        remote_asn: 65000
+      swp2:
+        address: 169.254.3.1/31
+        peer: 169.254.3.0
+        remote_asn: 65000
+    leaf02:
+      swp1:
+        address: 169.254.2.3/31
+        peer: 169.254.2.2
+        remote_asn: 65000
+      swp2:
+        address: 169.254.3.3/31
+        peer: 169.254.3.2
+        remote_asn: 65000
+    exit01:
+      swp1:
+        address: 169.254.2.5/31
+        peer: 169.254.2.4
+        remote_asn: 65000
+      swp2:
+        address: 169.254.3.5/31
+        peer: 169.254.3.4
+        remote_asn: 65000
+    exit02:
+      swp1:
+        address: 169.254.2.7/31
+        peer: 169.254.2.6
+        remote_asn: 65000
+      swp2:
         address: 169.254.3.7/31
         peer: 169.254.3.6
         remote_asn: 65000
