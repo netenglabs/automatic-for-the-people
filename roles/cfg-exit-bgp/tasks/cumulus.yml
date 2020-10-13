@@ -1,13 +1,60 @@
 ---
-- name: copy FRR daemons
+- name: configure dcedge and firewall eBGP config
   become: yes
-  copy: src=daemons dest=/etc/frr/
-  
-- name: copy FRR.conf
-  become: yes
-  template:
-    src: frr.conf.j2
-    dest: /etc/frr/frr.conf
-    validate: vtysh -C -f %s
+  blockinfile:
+    path: /etc/frr/frr.conf
+    block: |
+      router bgp {{ bgp_asn }}
+         {% for port in default_vrf_firewall_ports[ansible_network_os] %}
+         neighbor {{ port.iface }} interface peer-group FW
+         {% endfor %}
+         !
+         address-family ipv4 unicast
+            neighbor FW activate
+         exit-address-family
+         !
+         {% for vrf in evpn_vrfs %}
+      router bgp {{ ibgp_asn }} vrf {{ vrf }}
+         bgp router-id {{ lo_addr }}
+         no bgp default ipv4-unicast
+         neighbor ISL peer-group
+         neighbor ISL remote-as external
+         {% for port in evpn_vrf_firewall_ports[ansible_network_os] %}
+         {% if port.vrf == vrf %}
+         neighbor {{ port.iface }} interface peer-group ISL
+         {% endif %}
+         {% endfor %}
+         !
+         address-family ipv4 unicast
+           neighbor ISL activate
+           {% for item in l2_networks %}
+           aggregate-address {{ l2_networks[item].ip_subnet }} summary-only
+           {% endfor %}
+        address-family l2vpn evpn
+           advertise ipv4 unicast
+         !
+         {% endfor %}
+         !
+      router bgp {{ ibgp_asn }} vrf {{ internet_vrf }}
+         bgp router-id {{ lo_addr }}
+         no bgp default ipv4-unicast
+         neighbor EDGE peer-group
+         neighbor EDGE remote-as external
+         neighbor EDGE bfd
+         neighbor FW peer-group
+         neighbor FW remote-as external
+         neighbor FW bfd
+         {% for port in internet_vrf_firewall_ports[ansible_network_os] %}
+         neighbor {{ port.iface }} interface peer-group FW
+         {% endfor %}
+         {% for port in dcedge_ports[ansible_network_os] %}
+         neighbor {{ port.iface }} interface peer-group EDGE
+         {% endfor %}
+         address-family ipv4 unicast
+            neighbor FW activate
+            neighbor EDGE activate
+            neighbor FW allowas-in 1
+    marker: '!{mark} edge-firewall-ports'
+  notify:
+    - reload FRR
     
-
