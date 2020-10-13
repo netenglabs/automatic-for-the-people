@@ -4,10 +4,10 @@
   cli_config:
     config: |
       int {{ item.iface }}
+        switchport
         switchport access vlan {{ item.vlanid }}
         mtu 9200
   with_items: "{{ l2_ports[ansible_network_os] }}"
-  tags: ifcfg
 
 - name: configure SVI (NXOS)
   connection: network_cli
@@ -19,4 +19,4 @@
        ip address {{ l2_networks[item.vlanid].ip_address }}
 
   with_items: "{{ l2_ports[ansible_network_os] }}"
-  tags: ifcfg, vlan
+

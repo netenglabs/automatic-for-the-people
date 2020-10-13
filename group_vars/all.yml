@@ -3,6 +3,10 @@ ibgp_asn: 64520
 internet_vrf_asn: 65001
 lo_addr: "{{ loopback_ip.split('/')[0] }}"
 nxos_fabric_anycast_gw_mac: 00:00:00:11:12:10
+underlay: ebgp
+overlay: ibgp
+use_local_as: "{% if underlay == 'ebgp' and overlay == 'ibgp' %} true {% else %} false {% endif %}"
+
 
 # l2_networks is keyed off of VLANID
 l2_networks:

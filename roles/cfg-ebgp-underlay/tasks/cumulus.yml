@@ -1,0 +1,30 @@
+---
+- name: Configure Unnumbered BGP underlay (Cumulus)
+  become: yes
+  blockinfile:
+    path: /etc/frr/frr.conf
+    create: yes
+    block: |
+      router bgp {{ bgp_asn }}
+        no bgp default ipv4-unicast
+        bgp bestpath as-path multipath-relax
+        neighbor UNDERLAY peer-group
+        neighbor UNDERLAY remote-as external
+        {% if use_local_as %}
+        neighbor UNDERLAY local-as {{ ebgp_asn[inventory_hostname] }} no-prepend replace-as
+        {% endif %}
+        neighbor UNDERLAY bfd
+        {% for nbr in isl_ports[ansible_network_os] %}
+        neighbor {{ nbr }} interface peer-group UNDERLAY
+        {% endfor %}
+        address-family ipv4 unicast
+          neighbor UNDERLAY activate
+          redistribute connected route-map LOOPBACKS_ONLY
+        !
+        route-map LOOPBACKS_ONLY permit 10
+          match interface lo
+        !
+    marker: '!{mark} {underlay}'
+  notify:
+    - reload FRR
+        

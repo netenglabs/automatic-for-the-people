@@ -1,0 +1,5 @@
+---
+- name: Configure eBGP underlay (EOS)
+  connection: network_cli
+  cli_config:
+    config: "{{ lookup('template', 'eos.yml') }}"

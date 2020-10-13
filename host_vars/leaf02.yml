@@ -1,5 +1,6 @@
 loopback_ip: 10.0.0.12/32
 hw_address: 44:39:39:FF:40:96
+bgp_asn: "{{ ibgp_asn }}"
 
 l2_ports:
   cumulus:

@@ -18,26 +18,30 @@
         name: frr
         state: reloaded
 
-- hosts: spine:leaf
+- hosts: spine:leaf:exit
   gather_facts: false
   roles:
     - cfg-features
     - role: cfg-ospf-isl
+      when: underlay == "ospf"
       tags: isl-ports
     - role: cfg-ospf-underlay
-      tags: ospf
+      tags: underlay
+      when: underlay == "ospf"
+    - role: cfg-bgp-isl
+      when: underlay == "ebgp"
+      tags: isl-ports
+    - role: cfg-ebgp-underlay
+      when: underlay == "ebgp"
+      tags: underlay
     - role: cfg-server-ports
       when: inventory_hostname in groups['leaf']
       tags: server-ports
     - role: cfg-vxlan
-      when: inventory_hostname in groups['leaf']
+      when: inventory_hostname not in groups['spine']
       tags: vxlan
     - role: cfg-evpn
       tags: evpn
-    - role: cfg-save
-    - role: cfg-reboot
-      when: ansible_network_os == "eos"
-      tags: reboot
   handlers:
     - name: ifup interfaces
       become: yes
@@ -51,23 +55,10 @@
 - hosts: exit
   gather_facts: false
   roles:
-    - cfg-features
-    - role: cfg-ospf-isl
-      tags: isl-ports
-    - role: cfg-ospf-underlay
-      tags: ospf
-    - role: cfg-vxlan
-      tags: vxlan
     - role: cfg-exit-isl
       tags: exit-isl
-    - role: cfg-evpn
-      tags: evpn
     - role: cfg-exit-bgp
       tags: exit-bgp
-    - role: cfg-save
-    - role: cfg-reboot
-      when: ansible_network_os == "eos"
-      tags: reboot
   handlers:
     - name: ifup interfaces
       become: yes
@@ -119,4 +110,11 @@
   roles:
     - role: cfg-servers
 
-    
+- hosts: spine:leaf:exit
+  gather_facts: false
+  roles:
+    - role: cfg-save
+    - role: cfg-reboot
+      when: ansible_network_os == "eos"
+      tags: reboot
+  

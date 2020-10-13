@@ -1,0 +1,14 @@
+---
+- name: Configure eBGP Underlay ISL ports (Cumulus)
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      {% for iface in isl_ports[ansible_network_os] %}
+      auto {{ iface }}
+      iface {{ iface }}
+         mtu 9200
+      {% endfor %}
+    marker: '#{mark} isl-ports'
+  notify:
+    - ifup interfaces

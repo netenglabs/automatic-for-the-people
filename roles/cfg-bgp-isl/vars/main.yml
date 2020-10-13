@@ -1,0 +1,145 @@
+ebgp_cfg:
+  eos:
+    spine01:
+      Eth1:
+        address: 169.254.2.0/31
+        peer: 169.254.2.1
+        remote_asn: 65101
+      Eth2:
+        address: 169.254.2.2/31
+        peer: 169.254.2.3
+        remote_asn: 65102
+      Eth3:
+        address: 169.254.2.4/31
+        peer: 169.254.2.5
+        remote_asn: 65201
+      Eth4:
+        address: 169.254.2.6/31
+        peer: 169.254.2.7
+        remote_asn: 65202
+    spine02:
+      Eth1:
+        address: 169.254.3.0/31
+        peer: 169.254.3.1
+        remote_asn: 65101
+      Eth2:
+        address: 169.254.3.2/31
+        peer: 169.254.3.3
+        remote_asn: 65102
+      Eth3:
+        address: 169.254.3.4/31
+        peer: 169.254.3.5
+        remote_asn: 65103
+      Eth4:
+        address: 169.254.3.6/31
+        peer: 169.254.3.7
+        remote_asn: 65104
+    leaf01:
+      Eth1:
+        address: 169.254.2.1/31
+        peer: 169.254.2.0
+        remote_asn: 65000
+      Eth2:
+        address: 169.254.3.1/31
+        peer: 169.254.3.0
+        remote_asn: 65000
+    leaf02:
+      Eth1:
+        address: 169.254.2.3/31
+        peer: 169.254.2.2
+        remote_asn: 65000
+      Eth2:
+        address: 169.254.3.3/31
+        peer: 169.254.3.2
+        remote_asn: 65000
+    exit01:
+      Eth1:
+        address: 169.254.2.5/31
+        peer: 169.254.2.4
+        remote_asn: 65000
+      Eth2:
+        address: 169.254.3.5/31
+        peer: 169.254.3.4
+        remote_asn: 65000
+    exit02:
+      Eth1:
+        address: 169.254.2.7/31
+        peer: 169.254.2.6
+        remote_asn: 65000
+      Eth2:
+        address: 169.254.3.7/31
+        peer: 169.254.3.6
+        remote_asn: 65000
+  nxos:
+    spine01:
+      Eth1/1:
+        address: 169.254.2.0/31
+        peer: 169.254.2.1
+        remote_asn: 65101
+      Eth1/2:
+        address: 169.254.2.2/31
+        peer: 169.254.2.3
+        remote_asn: 65102
+      Eth1/3:
+        address: 169.254.2.4/31
+        peer: 169.254.2.5
+        remote_asn: 65201
+      Eth1/4:
+        address: 169.254.2.6/31
+        peer: 169.254.2.7
+        remote_asn: 65202
+    spine02:
+      Eth1/1:
+        address: 169.254.3.0/31
+        peer: 169.254.3.1
+        remote_asn: 65101
+      Eth1/2:
+        address: 169.254.3.2/31
+        peer: 169.254.3.3
+        remote_asn: 65102
+      Eth1/3:
+        address: 169.254.3.4/31
+        peer: 169.254.3.5
+        remote_asn: 65103
+      Eth1/4:
+        address: 169.254.3.6/31
+        peer: 169.254.3.7
+        remote_asn: 65104
+    leaf01:
+      Eth1/1:
+        address: 169.254.2.1/31
+        peer: 169.254.2.0
+        remote_asn: 65000
+      Eth1/2:
+        address: 169.254.3.1/31
+        peer: 169.254.3.0
+        remote_asn: 65000
+    leaf02:
+      Eth1/1:
+        address: 169.254.2.3/31
+        peer: 169.254.2.2
+        remote_asn: 65000
+      Eth1/2:
+        address: 169.254.3.3/31
+        peer: 169.254.3.2
+        remote_asn: 65000
+    exit01:
+      Eth1/1:
+        address: 169.254.2.5/31
+        peer: 169.254.2.4
+        remote_asn: 65000
+      Eth1/2:
+        address: 169.254.3.5/31
+        peer: 169.254.3.4
+        remote_asn: 65000
+    exit02:
+      Eth1/1:
+        address: 169.254.2.7/31
+        peer: 169.254.2.6
+        remote_asn: 65000
+      Eth1/2:
+        address: 169.254.3.7/31
+        peer: 169.254.3.6
+        remote_asn: 65000
+
+        

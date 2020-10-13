@@ -1,0 +1,29 @@
+!
+route-map LOOPBACKS_ONLY permit 10
+  match interface loopback0
+!
+router bgp {{ bgp_asn }}
+  log-neighbor-changes
+  router-id {{ lo_addr }}
+  bestpath as-path multipath-relax
+  !
+  address-family ipv4 unicast
+    redistribute direct route-map LOOPBACKS_ONLY
+    maximum-paths 64
+    exit
+  !
+  template peer UNDERLAY
+    {% if use_local_as %}
+    local-as {{ ebgp_asn[inventory_hostname] }} no-prepend replace-as
+    {% endif %}
+    address-family ipv4 unicast
+    exit
+!
+  {% for nbr, value in ebgp_cfg[ansible_network_os][inventory_hostname].items() %}
+  neighbor {{ value.peer }}
+    remote-as {{ value.remote_asn }}
+    inherit peer UNDERLAY
+    exit
+  {% endfor %}
+ !
+!
