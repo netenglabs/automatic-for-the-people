@@ -1,6 +1,6 @@
 This directory embodies the generic 2-tier Clos topology with a configurable number of leaves and spines, and a configurable number of singly attached servers per leaf. A simple version of this topology is as shown in the figure below.
 
-![Single-Attach Topology](./single-attach-topo.png)
+![Single-Attach Topology](./2t-single-attach.png)
 
 The configurable numbers can be specified in the instance_defs.rb file, which looks like this:
 ```Ruby
