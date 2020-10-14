@@ -40,3 +40,5 @@ If you wish to add more VNIs/VLANs, you can do so by modifying the l2_networks v
 The configuration should automatically work out everything once you add these additional definitions. 
 
 The file deploy-evpn.yml is the main deployment file for deploying symmetric EVPN with distributed anycast gateway. You can pick the overlay and underlay by setting the appropriate values for overlay and underlay variables in group_vars/all.yml.
+
+**The Vagrantfile provided assumes kvm and libvirt (doesn't work with Virtualbox hypervisor). You can choose to reproduce the simulation environment using a different tool than Vagrant (such as EVE-NG or GNS3) and still use the provided configuration. Remember to modify the variables in group_vars and host_vars appropriately.**
