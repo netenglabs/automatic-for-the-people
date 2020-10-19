@@ -1,0 +1,3 @@
+loopback_ip: 10.0.0.22/32
+bgp_asn: "{{ ibgp_asn }}"
+

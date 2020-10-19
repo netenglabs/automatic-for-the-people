@@ -1,0 +1,82 @@
+isl_ports:
+  cumulus:
+    - swp1
+    - swp2
+  nxos:
+    - Eth1/1
+    - Eth1/2
+  eos:
+    - Eth1
+    - Eth2
+  junos:
+    - xe-0/0/0
+    - xe-0/0/1
+
+evpn_peers:
+  - 10.0.0.21
+  - 10.0.0.22
+
+portchannels:
+  cumulus:
+    peerlink:
+      ports:
+        - swp5
+        - swp6
+  eos:
+    port-channel1:
+      ports:
+        Eth5-6
+
+mlag:
+  sys_id:
+    cumulus:
+      "{{ clag_sysid }}"
+    eos:
+      "{{ eos_domainid }}"
+    nxos:
+      "{{ vpc_domainid }}"
+  peerlink_vlan: 4094
+  vtep_anycast_ip: loopback[1]
+  peerlink:
+    cumulus: peerlink
+    eos: port-channel1
+  mbr_portchannels:
+    cumulus:
+      - iface: bond01
+        ports:
+          - swp3
+        mlag_id: 1
+      - iface: bond02
+        ports:
+          - swp4
+        mlag_id: 2
+    nxos:
+    eos:
+      - iface: port-channel3
+        ports:
+          - Eth3
+        mlag_id: 1
+      - iface: port-channel4
+        ports:
+          - Eth4
+        mlag_id: 2
+  
+vtep_iface:
+  eos:
+    Loopback1
+  nxos:
+    loopback1
+
+# The ID is the VLAN ID; Obviously VLANIDs can only be < 255 with this schemq
+anycast_gw_mac: "00:00:00:11:12:{{ item.vlanid }}"
+
+vid_list: "{{ l2_ports[ansible_network_os] | json_query('[*].vlanid') }}"
+
+l3_vni_vid_list: "{{ evpn_l3_info | json_query('[*].vlan') }}"
+
+l2vni_ifs: "{{ ['vni'] | zip_longest(vid_list | map('extract', l2_networks) | list | json_query('[*].vnid'), fillvalue='vni') | map ('join', '') | join(' ') }}"
+
+l3vni_ifs: "{{ ['vni'] | zip_longest(evpn_l3_info | json_query('[*].vnid') | map('string') | list, fillvalue='vni') | map('join', '') | join(' ') }}"
+
+l2_ifs: "{{ l2_ports[ansible_network_os] | json_query('[*].iface') | join(' ') }}"
+

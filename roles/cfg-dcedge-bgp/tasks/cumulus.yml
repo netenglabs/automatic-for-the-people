@@ -12,22 +12,13 @@
         neighbor ISL peer-group
         neighbor ISL remote-as external
         neighbor ISL bfd
+        {% for peer in dcedge_bgp_peers %}
+        neighbor {{ peer.peer }} peer-group ISL
+        {% endfor %}
         address-family ipv4 unicast
           neighbor ISL activate
           neighbor ISL default-originate
           redistribute connected route-map LOOPBACKS
         exit-address-family
-    marker: '!{mark} base-bgp'
   notify:
-    - restart frr
-
-- name: Configure BGP neighbors (Cumulus)
-  become: yes
-  blockinfile:
-    path: /etc/frr/frr.conf
-    block: |
-        neighbor {{ item }} peer-group ISL
-    marker: '!{mark} { item }'
-  with_items: "{{ dcedge_bgp_peers }}"
-  notify:
-    - restart frr
+    - restart FRR

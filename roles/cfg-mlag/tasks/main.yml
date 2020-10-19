@@ -1,0 +1,4 @@
+---
+- name: Configure MLAG
+  include_tasks: "{{ansible_network_os}}.yml"
+

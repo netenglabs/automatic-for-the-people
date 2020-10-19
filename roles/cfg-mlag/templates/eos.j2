@@ -1,0 +1,10 @@
+     {% for item in mlag.mbr_portchannels[ansible_network_os] %}
+     int {{ item.ports|join(' ') }}
+        no shut
+        channel-group {{ item.iface.split('port-channel')[1]|int }} mode active
+
+      int {{ item.iface }}
+        no shut
+        switchport mode access
+        mlag {{ item.mlag_id }}
+      {% endfor %}

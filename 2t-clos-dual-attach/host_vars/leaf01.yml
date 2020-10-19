@@ -1,0 +1,31 @@
+loopback_ip: 10.0.0.11/32
+hw_address: 44:39:39:FF:40:95
+bgp_asn: "{{ ibgp_asn }}"
+clag_sysid: "{{ hw_address }}"
+eos_domainid: mlag_leaf12
+vpc_domainid: 12
+vtep_ip: 10.0.0.112
+
+l2_ports:
+  cumulus:
+    - iface: bond01
+      vlanid: 10
+    - iface: bond02
+      vlanid: 30
+  nxos:
+    - iface: Eth1/3
+      vlanid: 10
+    - iface: Eth1/4
+      vlanid: 30
+  eos:
+    - iface: port-channel3
+      vlanid: 10
+    - iface: port-channel4
+      vlanid: 30
+  junos:
+    - iface: xe-0/0/2
+      vlanid: 10
+    - iface: xe-0/0/3
+      vlanid: 30
+
+    

@@ -1,4 +1,18 @@
 ---
+- name: Configure VTEP (Cumulus)
+  become: yes
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      iface lo
+        {% if mlag is defined %}
+        vxlan-local-tunnelip {{ lo_addr }}
+        clagd-vxlan-anycast-ip {{ vtep_ip }}
+        {% else %}
+        vxlan-local-tunnelip {{ lo_addr }}
+        {% endif %}
+    marker: '#{mark} vtep'
+        
 - name: Configure VNIs (Cumulus)
   become: yes
   blockinfile:
@@ -8,7 +22,6 @@
       iface {{ ['vni', l2_networks[item.vlanid].vnid|string]|join('') }}
         mtu 9200
         vxlan-id {{ l2_networks[item.vlanid].vnid }}
-        vxlan-local-tunnelip {{ lo_addr }}
         bridge-learning off
         bridge-access {{ item.vlanid }}
     marker: '# {mark} l2vni-{{ item.vlanid }}'
@@ -24,7 +37,7 @@
       iface bridge
         bridge-vlan-aware yes
         bridge-ports  {{ l2_ifs }} {{ l2vni_ifs }} {{ l3vni_ifs }}
-        bridge-vids {{ vid_list | join(' ') }}
+        bridge-vids {{ vid_list | join(' ') }} {{ l3_vni_vid_list | join(' ') }}
     marker: '# {mark} bridge'
   notify:
     - ifup interfaces
@@ -51,7 +64,8 @@
       iface {{ ['vni', item.vnid|string]|join('') }}
         mtu 9200
         vxlan-id {{ item.vnid }}
-        vxlan-local-tunnelip {{ lo_addr }}
+        mstpctl-bpduguard yes
+        mstpctl-portbpdufilter yes
         bridge-access {{ item.vlan }}
         bridge-learning off
 
@@ -64,23 +78,5 @@
         vrf {{ item.vrf }}
     marker: "# {mark} {{ item }}"
   with_items: "{{ evpn_l3_info }}"
-  notify:
-    - ifup interfaces
-
-- name: Move SVIs into appropriate VRF
-  become: yes
-  blockinfile:
-    path: /etc/network/interfaces
-    block: |
-      auto {{ l2_networks[item.vlanid].vlanif }}
-      iface {{ l2_networks[item.vlanid].vlanif }}
-        vrf {{ l2_networks[item.vlanid].vrf }}
-        mtu 9164
-        address-virtual {{ anycast_gw_mac }} {{ l2_networks[item.vlanid].ip_address }} 
-        vlan-id {{ item.vlanid }}
-        vlan-raw-device bridge
-    marker: "# {mark} SVI-vlan{{ item.vlanid }}"
-  with_items: "{{ l2_ports[ansible_network_os] }}"
-  when: l2_ports is defined
   notify:
     - ifup interfaces

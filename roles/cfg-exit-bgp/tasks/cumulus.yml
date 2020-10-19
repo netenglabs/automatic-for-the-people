@@ -5,6 +5,9 @@
     path: /etc/frr/frr.conf
     block: |
       router bgp {{ bgp_asn }}
+         neighbor FW peer-group
+         neighbor FW remote-as external
+         neighbor FW bfd
          {% for port in default_vrf_firewall_ports[ansible_network_os] %}
          neighbor {{ port.iface }} interface peer-group FW
          {% endfor %}
@@ -13,7 +16,7 @@
             neighbor FW activate
          exit-address-family
          !
-         {% for vrf in evpn_vrfs %}
+      {% for vrf in evpn_vrfs %}
       router bgp {{ ibgp_asn }} vrf {{ vrf }}
          bgp router-id {{ lo_addr }}
          no bgp default ipv4-unicast
@@ -30,10 +33,7 @@
            {% for item in l2_networks %}
            aggregate-address {{ l2_networks[item].ip_subnet }} summary-only
            {% endfor %}
-        address-family l2vpn evpn
-           advertise ipv4 unicast
-         !
-         {% endfor %}
+      {% endfor %}
          !
       router bgp {{ ibgp_asn }} vrf {{ internet_vrf }}
          bgp router-id {{ lo_addr }}
@@ -54,6 +54,9 @@
             neighbor FW activate
             neighbor EDGE activate
             neighbor FW allowas-in 1
+        address-family l2vpn evpn
+           advertise ipv4 unicast
+         !
     marker: '!{mark} edge-firewall-ports'
   notify:
     - reload FRR

@@ -1,0 +1,577 @@
+def get_mac(oui="48:47:00")
+  "Generate a MAC address"
+  nic = (1..3).map{"%0.2x"%rand(256)}.join(":")
+  return "#{oui}:#{nic}"
+end
+
+require './instance_defs.rb'
+require './nos_defs.rb'
+
+Vagrant.require_version ">= 2.1.0"
+Vagrant.configure("2") do |config|
+
+  config.vm.provider :libvirt do |domain|
+    domain.management_network_name = "default"
+    domain.management_network_address = "192.168.123.0/24"
+  end
+
+  # If you have base port at 10900, spine1's port allocation starts at 10900+1*100
+  # So, if you have 2 spines, spine1's base_port is 11000, spine2's 11100
+  # So, leaf1's base_port starts at 10900 + 100*(2) + 1*100 = 11200, leaf4's is 10900 + 100(2) + 4*100 = 11500
+  # exit1's base_port starts at 10900 + 100(2+4) + 1*100 = 11600
+  # server101's base port is 11100 + 100(4+2) + 100 = 11800
+
+  SPINE_BASE_PORT = BASE_PORT
+  LEAF_BASE_PORT = SPINE_BASE_PORT + 100*(NUM_SPINES)
+  EXIT_BASE_PORT = SPINE_BASE_PORT + 100*(NUM_SPINES+NUM_LEAVES)
+  SERVER_BASE_PORT = LEAF_BASE_PORT + 100*(NUM_LEAVES+NUM_EXIT_LEAVES) + 100
+
+
+  ans_childlist = ["leaf", "spine", "exit", "servers"]
+  spinelist = []
+  spinevars = {"ansible_network_os" => SPINE_NOS}
+
+  server_portmap = {}
+  server_port = SERVER_BASE_PORT
+  (1..NUM_LEAVES).step(2).each do |lid|
+    (1..NUM_SERVERS_PER_LEAF).each do |id|
+      sname = ( "server" + lid.to_s + "%02d"%id )
+      server_portmap.merge!(
+        {sname => [server_port, server_port+1]}
+      )
+      server_port += 2
+    end
+  end
+
+  pfe_port_id = 1
+  # spines
+  (1..NUM_SPINES).each do |id|
+    re_name = ( "spine" + "%02d"%id).to_sym
+    spinelist << re_name
+
+    config.vm.define re_name do |node|
+      node.vm.hostname = re_name.to_s
+      node.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
+      node.vm.box = NOS_BOX[SPINE_NOS]
+      node.vm.box_version = NOS_VERSION[SPINE_NOS]
+      
+      node.vm.provider :libvirt do |v|
+        v.memory = NOS_MEM[SPINE_NOS]
+        v.management_network_mac = "44:38:39:01:01:"+"%02d"%id
+
+        if SPINE_NOS == "junos"
+          v.nic_model_type = "e1000"
+        end
+      end
+
+      if SPINE_NOS != "cumulus"
+        node.vm.guest = :tinycore
+      end
+
+      if SPINE_NOS == "junos"
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => BASE_PORT + pfe_port_id,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => BASE_PORT + pfe_port_id + 1,
+                        :libvirt__iface_name => "spine" + "%02d"%id + "pfe",
+                        auto_config: false
+
+        node.vm.network :private_network,
+                        # reserved port
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => DUMMY_PORT+id,
+                        :libvirt__tunnel_ip => "127.0.0.4",
+                        :libvirt__tunnel_port => DUMMY_PORT,
+                        :libvirt__iface_name => "spine%02d-resv"%id,
+                        auto_config: false
+      end
+
+      # Regular leaves first
+      (1..NUM_LEAVES).each do |lid|
+        # spine1's connection to leaf1's is: 10900+1*100+1 => 11100+1*100+1
+        # spine2's connection to leaf2's is: 10900+2*100+2 => 11100+2*200+2
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => SPINE_BASE_PORT + id*100 + lid,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => LEAF_BASE_PORT + lid*100 + id,
+                        :libvirt__iface_name => ("leaf"+"%02d"%lid),
+                        auto_config: false
+      end
+
+      # Exit leaves next
+      exit_base_port = NUM_LEAVES
+      (1..NUM_EXIT_LEAVES).each do |lid|
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => SPINE_BASE_PORT + id*100 + exit_base_port + lid,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => EXIT_BASE_PORT + lid*100 + id,
+                        :libvirt__iface_name => ("exit"+"%02d"%lid),
+                        auto_config: false
+      end
+    end
+
+    if SPINE_NOS == "junos"
+      pfe_name = ( "spine" + "%02d"%id + "-pfe").to_sym
+
+      config.vm.define pfe_name do |node|
+        node.vm.box = "juniper/vqfx10k-pfe"
+        node.vm.guest = :tinycore
+        node.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
+        node.ssh.insert_key = false
+        node.ssh.shell = "/bin/ash"
+        node.ssh.username = "tc"
+
+        node.vm.provider :libvirt do |v|
+          v.nic_model_type = "e1000"
+        end
+        
+        node.vm.network :private_network,
+                        # leaf01-pfe-internal-1 <--> leaf01-internal-1
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => BASE_PORT + pfe_port_id + 1,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => BASE_PORT + pfe_port_id,
+                        :libvirt__iface_name => "spine-pfe" + "%02d"%id,
+                        auto_config: false
+        pfe_port_id += 2
+      end
+    end
+  end
+
+  #  Leaves
+  leaflist = []
+  leafvars = {"ansible_network_os" => LEAF_NOS}
+  # peer links next
+  (1..NUM_LEAVES).each do |id|
+    re_name = ( "leaf" + "%02d"%id).to_sym
+    leaflist << re_name
+
+    config.vm.define re_name do |node|
+      node.vm.hostname = re_name.to_s
+      node.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
+      node.vm.box = NOS_BOX[LEAF_NOS]
+      node.vm.box_version = NOS_VERSION[LEAF_NOS]
+      
+      node.vm.provider :libvirt do |v|
+        v.memory = NOS_MEM[LEAF_NOS]
+        v.management_network_mac = "44:38:39:01:02:"+"%02d"%id
+
+        if LEAF_NOS == "junos"
+          v.nic_model_type = "e1000"
+        end
+      end
+
+      if LEAF_NOS != "cumulus"
+        node.vm.guest = :tinycore
+      end
+
+      if LEAF_NOS == "junos"
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => BASE_PORT + pfe_port_id,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => BASE_PORT + pfe_port_id + 1,
+                        :libvirt__iface_name => ("leaf%02d-pfe"%id),
+                        auto_config: false
+
+        node.vm.network :private_network,
+                        # reserved port
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.2",
+                        :libvirt__tunnel_local_port => DUMMY_PORT+id,
+                        :libvirt__tunnel_ip => "127.0.0.4",
+                        :libvirt__tunnel_port => DUMMY_PORT,
+                        :libvirt__iface_name => "leaf%02d-resv"%id,
+                        auto_config: false
+      end
+
+      # Uplink ports first
+      (1..NUM_SPINES).each do |lid|
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => LEAF_BASE_PORT + id*100 + lid,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => SPINE_BASE_PORT + lid*100 + id,
+                        :libvirt__iface_name => ("spine" + "%02d"%lid),
+                        auto_config: false
+      end
+
+      # server ports next
+      # leaf1's first server port
+      if id % 2 == 1
+        index = 0
+        lsid = id
+      else
+        index = 1
+        lsid = id -1
+      end
+
+      leaf_end_server_port_start = LEAF_BASE_PORT + id*100 + NUM_SPINES
+      (1..NUM_SERVERS_PER_LEAF).each do |lid|
+        sname = ( "server" + lsid.to_s + "%02d"%lid)
+        # leaf1's connection to server101 is: 11100+1*100+2+1 => 11750+50+1
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => leaf_end_server_port_start+lid,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => server_portmap[sname][index],
+                        :libvirt__iface_name => lid.to_s,
+                        auto_config: false
+      end
+
+      if id%2 == 1
+        peer_id = id+1
+      else
+        peer_id = id-1
+      end
+      peer_base_port = NUM_SPINES + NUM_SERVERS_PER_LEAF+1
+      (1..2).each do |lid|
+        node.vm.network :private_network,
+                        :mac => "#{get_mac()}",
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => LEAF_BASE_PORT + id*100 + peer_base_port+lid,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => LEAF_BASE_PORT + peer_id*100 + peer_base_port+lid,
+                        :libvirt__iface_name => ("peer" + id.to_s + peer_id.to_s),
+                        auto_config: false
+      end
+    end
+      
+
+    if LEAF_NOS == "junos"
+      pfe_name = ( "leaf" + "%02d"%id + "-pfe").to_sym
+
+      config.vm.define pfe_name do |node|
+        node.vm.box = "juniper/vqfx10k-pfe"
+        node.vm.guest = :tinycore
+        node.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
+        node.ssh.insert_key = false
+        node.ssh.shell = "/bin/ash"
+        node.ssh.username = "tc"
+        
+        node.vm.provider :libvirt do |v|
+          v.nic_model_type = "e1000"
+        end
+        
+        node.vm.network :private_network,
+                        # leaf01-pfe-internal-1 <--> leaf01-internal-1
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.2",
+                        :libvirt__tunnel_local_port => BASE_PORT + pfe_port_id + 1,
+                        :libvirt__tunnel_ip => "127.0.0.2",
+                        :libvirt__tunnel_port => BASE_PORT + pfe_port_id,
+                        :libvirt__iface_name => ("leaf%02d-pfe"%id),
+                        auto_config: false
+        pfe_port_id += 2
+      end
+    end
+  end
+
+  # Exit Leaves
+  # Don't reset the pfe_port_id as exit leaves also use 127.0.0.2 IP
+  exitlist = []
+  exitvars = {"ansible_network_os" => EXIT_NOS}
+  (1..NUM_EXIT_LEAVES).each do |id|
+    re_name = ( "exit" + "%02d"%id).to_sym
+    exitlist << re_name
+
+    config.vm.define re_name do |node|
+      node.vm.hostname = re_name.to_s
+      node.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
+      node.vm.box = NOS_BOX[EXIT_NOS]
+      node.vm.box_version = NOS_VERSION[EXIT_NOS]
+      
+      node.vm.provider :libvirt do |v|
+        v.memory = NOS_MEM[EXIT_NOS]
+        v.management_network_mac = "44:38:39:01:03:"+"%02d"%id
+
+        if EXIT_NOS == "junos"
+          v.nic_model_type = "e1000"
+        end
+      end
+
+      if EXIT_NOS != "cumulus"
+        node.vm.guest = :tinycore
+      end
+
+      if EXIT_NOS == "junos"
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.2",
+                        :libvirt__tunnel_local_port => BASE_PORT + pfe_port_id,
+                        :libvirt__tunnel_ip => "127.0.0.2",
+                        :libvirt__tunnel_port => BASE_PORT + pfe_port_id + 1,
+                        :libvirt__iface_name => "exit" + "%02d"%id + "-pfe",
+                        auto_config: false
+
+        node.vm.network :private_network,
+                        # reserved port
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.3",
+                        :libvirt__tunnel_local_port => DUMMY_PORT+id,
+                        :libvirt__tunnel_ip => "127.0.0.4",
+                        :libvirt__tunnel_port => DUMMY_PORT,
+                        :libvirt__iface_name => "exit%02d-resv"%id,
+                        auto_config: false
+      end
+
+      (1..NUM_SPINES).each do |lid|
+        # exit1's connection to spine1 is: 11500+1*100+1 => 10900+1*100+4+1
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => EXIT_BASE_PORT + id*100 + lid,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => SPINE_BASE_PORT + lid*100 + NUM_LEAVES+id,
+                        :libvirt__iface_name => ("spine" + "%02d"%lid),
+                        auto_config: false
+      end
+
+      # Firewall Port
+      node.vm.network :private_network,
+                      :libvirt__tunnel_type => "udp",
+                      :libvirt__tunnel_local_ip => "127.0.0.1",
+                      :libvirt__tunnel_local_port => BASE_PORT + 48 + id*2,
+                      :libvirt__tunnel_ip => "127.0.0.1",
+                      :libvirt__tunnel_port => BASE_PORT + 48 + id*2+1,
+                      :libvirt__iface_name => ("firewall01"),
+                      auto_config: false
+
+      # Internet Port
+      
+      node.vm.network :private_network,
+                      :libvirt__tunnel_type => "udp",
+                      :libvirt__tunnel_local_ip => "127.0.0.1",
+                      :libvirt__tunnel_local_port => BASE_PORT + 50 + id*10 + 1,
+                      :libvirt__tunnel_ip => "127.0.0.1",
+                      :libvirt__tunnel_port => BASE_PORT + 50 + id*10 + 2,
+                      :libvirt__iface_name => ("dcedge01"),
+                      auto_config: false
+    end
+
+    if EXIT_NOS == "junos"
+      pfe_name = ( "exit" + "%02d"%id + "-pfe").to_sym
+
+      config.vm.define pfe_name do |node|
+        node.vm.box = "juniper/vqfx10k-pfe"
+        node.vm.guest = :tinycore
+        node.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
+        node.ssh.insert_key = false
+        node.ssh.shell = "/bin/ash"
+        node.ssh.username = "tc"
+        
+        node.vm.provider :libvirt do |v|
+          v.nic_model_type = "e1000"
+        end
+        
+        node.vm.network :private_network,
+                        # leaf01-pfe-internal-1 <--> leaf01-internal-1
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.2",
+                        :libvirt__tunnel_local_port => BASE_PORT + pfe_port_id + 1,
+                        :libvirt__tunnel_ip => "127.0.0.2",
+                        :libvirt__tunnel_port => BASE_PORT + pfe_port_id,
+                        :libvirt__iface_name => "exit-pfe" + "%02d"%id,
+                        auto_config: false
+        pfe_port_id += 2
+      end
+    end
+  end
+
+  # Servers
+  serverlist = []
+  (1..NUM_LEAVES).step(2).each do |lid|
+    (1..NUM_SERVERS_PER_LEAF).each do |id|
+      s_name = ( "server" + lid.to_s + "%02d"%id ).to_sym
+      serverlist << s_name.to_s
+
+      config.vm.define s_name do |server|
+        server.vm.hostname = s_name.to_s
+        server.vm.box = SERVER_BOX
+        server.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
+
+	server.vm.provider :libvirt do |v|
+      	  v.nic_model_type = 'e1000' 
+          v.memory = 512
+        end
+        
+        server.vm.network :private_network,
+                          :libvirt__tunnel_type => "udp",
+                          :libvirt__tunnel_local_ip => "127.0.0.1",
+                          :libvirt__tunnel_local_port => server_portmap[s_name.to_s][0],
+                          :libvirt__tunnel_ip => "127.0.0.1",
+                          :libvirt__tunnel_port => LEAF_BASE_PORT + lid*100 + NUM_SPINES+id,
+                          :libvirt__iface_name => "eth1",
+                          auto_config: false
+        server.vm.network :private_network,
+                          :libvirt__tunnel_type => "udp",
+                          :libvirt__tunnel_local_ip => "127.0.0.1",
+                          :libvirt__tunnel_local_port => server_portmap[s_name.to_s][1],
+                          :libvirt__tunnel_ip => "127.0.0.1",
+                          :libvirt__tunnel_port => LEAF_BASE_PORT + (lid+1)*100 + NUM_SPINES+id,
+                          :libvirt__iface_name => "eth2",
+                          auto_config: false
+      end
+    end
+  end
+
+  # Firewall
+  if (NUM_EXIT_LEAVES != 0) && (NUM_FIREWALL == 1)
+    fwlist = ["firewall01"]
+    ans_childlist << "firewall"
+    fw_name = ("firewall01").to_sym
+    config.vm.define fw_name do |node|
+      node.vm.hostname = fw_name.to_s
+      node.vm.box = FIREWALL_BOX
+      node.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
+
+      node.vm.provider :libvirt do |v|
+      	v.nic_model_type = 'e1000' 
+        v.memory = 512
+      end
+        
+      (1..NUM_EXIT_LEAVES).each do |id|
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => BASE_PORT + 48 + id*2+1,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => BASE_PORT + 48 + id*2,
+                        :libvirt__iface_name => "exit%02d"%id,
+                        auto_config: false
+      end
+    end
+  end
+
+  # DC Edge Router
+  # We continue to use pfe_port_id
+  if (NUM_EXIT_LEAVES != 0) && (NUM_DCEDGE_RTRS == 1)
+    dcedgelist = ["dcedge01"]
+    ans_childlist << "dcedge"
+    dcedgevars = {"ansible_network_os" => DCEDGE_NOS}
+    dcedge_name = ("dcedge01").to_sym
+
+    config.vm.define dcedge_name do |node|
+      node.vm.hostname = dcedge_name.to_s
+      node.vm.box = NOS_BOX[DCEDGE_NOS]
+      node.vm.box_version = NOS_VERSION[DCEDGE_NOS]
+      node.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
+
+      node.vm.provider :libvirt do |v|
+        v.memory = NOS_MEM[DCEDGE_NOS]
+        v.management_network_mac = "44:38:39:01:03:FE"
+
+        if DCEDGE_NOS == "junos"
+          v.nic_model_type = "e1000"
+        end
+      end
+
+      if DCEDGE_NOS != "cumulus"
+        node.vm.guest = :tinycore
+      end
+
+
+      if DCEDGE_NOS == "junos"
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => BASE_PORT + pfe_port_id,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => BASE_PORT + pfe_port_id + 1,
+                        :libvirt__iface_name => "dcedge01-pfe",
+                        auto_config: false
+
+        node.vm.network :private_network,
+                        # reserved port
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.4",
+                        :libvirt__tunnel_local_port => DUMMY_PORT+50,
+                        :libvirt__tunnel_ip => "127.0.0.4",
+                        :libvirt__tunnel_port => DUMMY_PORT,
+                        :libvirt__iface_name => "dcedge01-resv",
+                        auto_config: false
+        
+      end
+
+      (1..NUM_EXIT_LEAVES).each do |id|
+        node.vm.network :private_network,
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.1",
+                        :libvirt__tunnel_local_port => BASE_PORT + 50 + id*10 + 2,
+                        :libvirt__tunnel_ip => "127.0.0.1",
+                        :libvirt__tunnel_port => BASE_PORT + 50 + id*10 + 1,
+                        :libvirt__iface_name => "exit%02d"%id,
+                        auto_config: false
+      end
+    end
+
+    # PFE for DC Edge in case of JunOS
+    if DCEDGE_NOS == "junos"
+      pfe_name = ( "dcedge01-pfe").to_sym
+
+      config.vm.define pfe_name do |node|
+        node.vm.box = "juniper/vqfx10k-pfe"
+        node.vm.guest = :tinycore
+        node.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
+        node.ssh.insert_key = false
+        node.ssh.shell = "/bin/ash"
+        node.ssh.username = "tc"
+        
+        node.vm.provider :libvirt do |v|
+          v.nic_model_type = "e1000"
+        end
+        
+        node.vm.network :private_network,
+                        # leaf01-pfe-internal-1 <--> leaf01-internal-1
+                        :libvirt__tunnel_type => "udp",
+                        :libvirt__tunnel_local_ip => "127.0.0.4",
+                        :libvirt__tunnel_local_port => BASE_PORT + pfe_port_id + 1,
+                        :libvirt__tunnel_ip => "127.0.0.4",
+                        :libvirt__tunnel_port => BASE_PORT + pfe_port_id,
+                        :libvirt__iface_name => "dcedge-pfe-01",
+                        auto_config: false
+        pfe_port_id += 2
+      end
+    end
+  end
+
+  # Stuff to make Ansible playbooks smooth
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    ansible.playbook = "dummy.yml"
+    ansible.groups = {
+      "leaf" => leaflist,
+      "spine" => spinelist,
+      "exit" => exitlist,
+      "servers" => serverlist,
+      "all:children" => ans_childlist,
+      "leaf:vars" => leafvars,
+      "spine:vars" => spinevars,
+      "exit:vars" => exitvars,
+    }
+
+    if NUM_EXIT_LEAVES != 0 and NUM_DCEDGE_RTRS == 1
+      ansible.groups.merge!(
+        {
+          "dcedge" => dcedgelist,
+          "firewall" => fwlist,
+          "dcedge:vars" => dcedgevars,          
+        })
+
+    end
+  end
+
+end

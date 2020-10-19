@@ -1,0 +1,123 @@
+---
+- hosts: spine:leaf:exit:dcedge
+  gather_facts: false
+  roles:
+    - role: cfg-hostname
+      tags: hostname
+    - role: cfg-lo
+      tags: loopback
+    - role: cfg-lldp
+      tags: lldp
+  handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
+    - name: reload FRR
+      become: yes
+      service:
+        name: frr
+        state: reloaded
+
+- hosts: spine:leaf:exit
+  gather_facts: false
+  roles:
+    - cfg-features
+    - role: cfg-ospf-isl
+      when: underlay == "ospf"
+      tags: isl-ports
+    - role: cfg-ospf-underlay
+      tags: underlay
+      when: underlay == "ospf"
+    - role: cfg-bgp-isl
+      when: underlay == "ebgp"
+      tags: isl-ports
+    - role: cfg-ebgp-underlay
+      when: underlay == "ebgp"
+      tags: underlay
+    - role: cfg-mlag
+      when: mlag is defined
+      tags: mlag
+    - role: cfg-server-ports
+      when: inventory_hostname in groups['leaf']
+      tags: server-ports
+    - role: cfg-vxlan
+      when: inventory_hostname not in groups['spine']
+      tags: vxlan
+    - role: cfg-evpn
+      tags: evpn
+  handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
+    - name: reload FRR
+      become: yes
+      service:
+        name: frr
+        state: reloaded
+
+- hosts: exit
+  gather_facts: false
+  roles:
+    - role: cfg-exit-isl
+      tags: exit-isl
+    - role: cfg-exit-bgp
+      tags: exit-bgp
+  handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
+    - name: reload FRR
+      become: yes
+      service:
+        name: frr
+        state: restarted
+
+- hosts: firewall
+  become: yes
+  roles:
+    - install-frr
+    - cfg-fw-interfaces
+    - cfg-fw-frr
+  
+  handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
+    - name: restart FRR
+      become: yes
+      service:
+        name: frr
+        state: restarted
+
+- hosts: dcedge
+  gather_facts: false
+  roles:
+    - role: cfg-features
+    - role: cfg-num-isl
+      tags: dcedge-ifs
+    - role: cfg-dcedge-bgp
+      tags: dcedge-bgp
+    - role: cfg-save
+  handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a
+    - name: restart FRR
+      become: yes
+      service:
+        name: frr
+        state: restarted
+
+- hosts: servers
+  become: yes
+  roles:
+    - role: cfg-dual-attach-servers
+
+- hosts: spine:leaf:exit
+  gather_facts: false
+  roles:
+    - role: cfg-save
+    - role: cfg-reboot
+      tags: reboot
+      when: ansible_network_os == "eos"
+  

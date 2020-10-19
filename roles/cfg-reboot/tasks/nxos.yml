@@ -5,3 +5,7 @@
     config: |
       reload in 5
 
+ - name: Wait for switches to come back up (Cumulus)
+   wait_for_connection:
+        timeout: 500
+        delay: 30

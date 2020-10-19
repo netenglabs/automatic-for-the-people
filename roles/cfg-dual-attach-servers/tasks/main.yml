@@ -7,11 +7,6 @@
 
  - name: Restart ssh
    service: name=sshd state=restarted
-
- - name: Add bonding module
-   modprobe:
-     name: bonding
-     state: present
       
  - name: Copy netplan file
    become: yes
@@ -21,3 +16,14 @@
    become: yes
    command: netplan apply
 
+ - name: Restart the server
+   shell: sleep 1 && shutdown -r 0
+   become: yes
+   async: 1
+   poll: 0
+   ignore_errors: true
+
+ - name: Wait for servers to come back up
+   wait_for_connection:
+        timeout: 180
+        delay: 15

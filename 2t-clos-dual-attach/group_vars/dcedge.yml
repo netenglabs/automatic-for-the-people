@@ -1,0 +1,21 @@
+isl_ports:
+  cumulus:
+    - iface: swp1
+      address: 169.254.127.0/31
+    - iface: swp2
+      address: 169.254.127.2/31
+  nxos:
+    - iface: Eth1/1
+      address: 169.254.127.0/31
+    - iface: Eth1/2
+      address: 169.254.127.2/31
+  eos:
+    - iface: Eth1
+      address: 169.254.127.0/31
+    - iface: Eth2
+      address: 169.254.127.2/31
+  junos:
+    - iface: xe-0/0/0
+      address: 169.254.127.0/31
+    - iface: xe-0/0/1
+      address: 169.254.127.2/31      

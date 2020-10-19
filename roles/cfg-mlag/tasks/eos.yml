@@ -1,0 +1,62 @@
+---
+- name: Configure peerlink slaves (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ portchannels[ansible_network_os][mlag.peerlink[ansible_network_os]].ports }}
+        no shut
+        channel-group {{ mlag.peerlink[ansible_network_os][-1] }} mode active
+
+- name: Configure peerlink (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ mlag.peerlink[ansible_network_os] }}
+        no shut
+        switchport mode trunk
+        spanning-tree link-type point-to-point
+        switchport trunk group peertrunk
+
+- name: Configure VLAN Interface on peerlink (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      vlan {{ mlag.peerlink_vlan }}
+        trunk group peertrunk
+      !
+      int vlan {{ mlag.peerlink_vlan }}
+        ip address 169.254.1.{{ inventory_hostname.split('leaf')[1]|int%2 }}/31
+        no autostate
+        no shut
+      !
+      no spanning-tree vlan-id 4094
+
+- name: Configure MLAG (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      mlag configuration
+        local-interface vlan {{ mlag.peerlink_vlan }}
+        {% if inventory_hostname.split('leaf')[1]|int%2 == 1 %}
+        peer-address 169.254.1.0
+        {% else %}
+        peer-address 169.254.1.1
+        {% endif %}
+        peer-link {{ mlag.peerlink[ansible_network_os] }}
+        domain-id {{ mlag.sys_id[ansible_network_os] }}
+        heartbeat-interval 2500
+        reload-delay 150
+
+- name: Configure member port channels (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      interface {{ item.ports|join(' ') }}
+        no shut
+        channel-group {{ item.iface.split('port-channel')[1]|int }} mode active
+      !
+      int {{ item.iface }}
+        no shut
+        switchport mode access
+        mlag {{ item.mlag_id }}
+  with_items: "{{ mlag.mbr_portchannels[ansible_network_os] }}"

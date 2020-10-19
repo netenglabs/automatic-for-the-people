@@ -1,4 +1,13 @@
 ---
+- name: Configure interface for VTEP IP (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ vtep_iface[ansible_network_os]
+        no shut
+        address {{ vtep_ip }}/32
+  when: vtep_iface[ansible_network_os] != 'loopback0'
+
 - name: Configure NVE/VTEP (NXOS)
   connection: network_cli
   cli_config:
@@ -6,7 +15,7 @@
       interface nve1
         no shutdown
         host-reachability protocol bgp
-        source-interface loopback0
+        source-interface {{ vtep_iface[ansible_network_os] }}
   when: inventory_hostname not in groups['spine']
   tags: vxlan
 

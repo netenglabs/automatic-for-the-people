@@ -3,7 +3,6 @@
   become: yes
   blockinfile:
     path: /etc/network/interfaces
-    
     block: |
       auto {{ item.iface }}
       iface {{ item.iface }}
@@ -37,8 +36,12 @@
     block: |
       auto {{ l2_networks[item.vlanid].vlanif }}
       iface {{ l2_networks[item.vlanid].vlanif }}
+        {% if l2_networks[item.vlanid].vrf != "default" %}
+        vrf {{ l2_networks[item.vlanid].vrf }}
+        {% endif %}
         mtu 9164
-        address-virtual {{ anycast_gw_mac }} {{ l2_networks[item.vlanid].ip_address }} 
+        address {{ l2_networks[item.vlanid].ip_address }}
+        hwaddress {{ anycast_gw_mac }}
         vlan-id {{ item.vlanid }}
         vlan-raw-device bridge
     marker: "# {mark} SVI-vlan{{ item.vlanid }}"

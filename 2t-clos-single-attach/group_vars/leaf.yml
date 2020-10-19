@@ -16,6 +16,12 @@ evpn_peers:
   - 10.0.0.21
   - 10.0.0.22
 
+vtep_iface:
+  eos:
+    Loopback0
+  nxos:
+    loopback0
+
 # The ID is the VLAN ID; Obviously VLANIDs can only be < 255 with this schemq
 anycast_gw_mac: "00:00:00:11:12:{{ item.vlanid }}"
 
