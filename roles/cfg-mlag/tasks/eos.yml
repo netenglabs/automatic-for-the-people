@@ -25,7 +25,7 @@
         trunk group peertrunk
       !
       int vlan {{ mlag.peerlink_vlan }}
-        ip address 169.254.1.{{ inventory_hostname.split('leaf')[1]|int%2 }}/31
+        ip address {{ mlag_info.peerlink_ip }}
         no autostate
         no shut
       !
@@ -37,13 +37,9 @@
     config: |
       mlag configuration
         local-interface vlan {{ mlag.peerlink_vlan }}
-        {% if inventory_hostname.split('leaf')[1]|int%2 == 1 %}
-        peer-address 169.254.1.0
-        {% else %}
-        peer-address 169.254.1.1
-        {% endif %}
+        peer-address {{ hostvars[mlag_info.peer_switch].mlag_info.peerlink_ip.split('/')[0] }}
         peer-link {{ mlag.peerlink[ansible_network_os] }}
-        domain-id {{ mlag.sys_id[ansible_network_os] }}
+        domain-id {{ mlag_info.eos_domainid }}
         heartbeat-interval 2500
         reload-delay 150
 
@@ -60,3 +56,9 @@
         switchport mode access
         mlag {{ item.mlag_id }}
   with_items: "{{ mlag.mbr_portchannels[ansible_network_os] }}"
+
+- name: Configure MLAG virtual router MAC (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      ip virtual-router mac-address {{ hw_address }}

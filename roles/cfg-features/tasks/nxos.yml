@@ -13,6 +13,14 @@
       feature nv overlay
       feature vn-segment-vlan-based
 
+- name: Enable Leaf-only features (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      feature vpc
+      feature lacp
+  when: inventory_hostname in groups['leaf']
+
 - name: Set systemwide Jumbo MTU size (NXOS)
   connection: network_cli
   cli_config:

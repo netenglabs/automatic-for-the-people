@@ -9,7 +9,9 @@
         no bgp default ipv4-unicast
         neighbor RR peer-group
         neighbor RR remote-as {{ ibgp_asn }}
+        {% if underlay != "ospf" %}
         neighbor RR update-source Loopback 0
+        {% endif %}
         neighbor RR send-community extended
   when: inventory_hostname not in groups['spine']
   tags: evpn
@@ -25,7 +27,9 @@
         neighbor RR peer-group
         neighbor RR remote-as {{ ibgp_asn }}
         neighbor RR send-community extended
+        {% if underlay != "ospf" %}
         neighbor RR update-source Loopback 0
+        {% endif %}
         neighbor RR route-reflector-client
   when: inventory_hostname in groups['spine']
   tags: evpn

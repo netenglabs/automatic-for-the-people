@@ -26,47 +26,46 @@ portchannels:
     port-channel1:
       ports:
         Eth5-6
+  nxos:
+    port-channel1:
+      ports:
+        Eth1/5-6
 
 mlag:
-  sys_id:
-    cumulus:
-      "{{ clag_sysid }}"
-    eos:
-      "{{ eos_domainid }}"
-    nxos:
-      "{{ vpc_domainid }}"
   peerlink_vlan: 4094
-  vtep_anycast_ip: loopback[1]
   peerlink:
     cumulus: peerlink
     eos: port-channel1
+    nxos: port-channel1
   mbr_portchannels:
     cumulus:
-      - iface: bond01
+      - iface: bond03
         ports:
           - swp3
-        mlag_id: 1
-      - iface: bond02
+        mlag_id: 3
+      - iface: bond04
         ports:
           - swp4
-        mlag_id: 2
+        mlag_id: 4
     nxos:
+      - iface: port-channel3
+        ports:
+          - Eth1/3
+        mlag_id: 3
+      - iface: port-channel4
+        ports:
+          - Eth1/4
+        mlag_id: 4
     eos:
       - iface: port-channel3
         ports:
           - Eth3
-        mlag_id: 1
+        mlag_id: 3
       - iface: port-channel4
         ports:
           - Eth4
-        mlag_id: 2
+        mlag_id: 4
   
-vtep_iface:
-  eos:
-    Loopback1
-  nxos:
-    loopback1
-
 # The ID is the VLAN ID; Obviously VLANIDs can only be < 255 with this schemq
 anycast_gw_mac: "00:00:00:11:12:{{ item.vlanid }}"
 

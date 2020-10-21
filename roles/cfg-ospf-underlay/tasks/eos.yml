@@ -6,8 +6,15 @@
       interface Loopback 0
          ip ospf area 0.0.0.0
       !
+      {% if vtep_iface != "Loopback0" %}
+      interface {{ vtep_iface }}
+         ip ospf area 0.0.0.0
+      {% endif %}
+      !
       router ospf 1
          log-adjacency-changes detail
          router-id {{ loopback_ip.split('/')[0] }}
          passive-interface Loopback 0
-
+         {% if vtep_iface != "Loopback0" %}
+         passive-interface {{ vtep_iface }}
+         {% endif %}

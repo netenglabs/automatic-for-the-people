@@ -1,19 +1,10 @@
 ---
-- name: Configure interface for VTEP IP (EOS)
-  connection: network_cli
-  cli_config:
-    config: |
-      int {{ vtep_iface[ansible_network_os] }}
-        no shut
-        ip address {{ vtep_ip }}/32
-  when: vtep_iface[ansible_network_os] != 'Loopback0'
-
 - name: Configure NVE (EOS)
   connection: network_cli
   cli_config:
     config: |
       int Vxlan1
-         vxlan source-interface {{ vtep_iface[ansible_network_os] }}
+         vxlan source-interface {{ vtep_iface }}
          vxlan udp-port 4789
          vxlan learn-restrict any
 

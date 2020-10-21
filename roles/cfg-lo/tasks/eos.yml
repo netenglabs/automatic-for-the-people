@@ -6,4 +6,15 @@
       int loopback0
         ip address {{ loopback_ip }}
 
-  tags: cfglo
+- name: Configure additional VTEP IP, if any (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      {% if vtep_ip is defined and vtep_ip[ansible_network_os]|length > 1 %}
+      interface Loopback 1
+        ip address {{ vtep_ip[ansible_network_os][1] }}
+      {% endif %}
+
+- name: Configure VTEP interface (EOS)
+  set_fact:
+    vtep_iface: "{% if vtep_ip[ansible_network_os]|length > 1 %} Loopback1 {% else %} Loopback0 {% endif %}"

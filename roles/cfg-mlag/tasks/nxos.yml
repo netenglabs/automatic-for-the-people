@@ -1,0 +1,44 @@
+---
+- name: Configure VPC (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      vpc domain {{ mlag_info.vpc_domainid }}
+        peer-keepalive destination {{ hostvars[mlag_info.peer_switch].ansible_host }} source {{ ansible_host }}
+        peer-switch
+        peer-gateway
+        layer3 peer-router
+        auto-recovery
+        ipv6 nd synchronize
+        ip arp synchronize
+      
+- name: Configure peerlink slaves (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ portchannels[ansible_network_os][mlag.peerlink[ansible_network_os]].ports }}
+        no shut
+        channel-group {{ mlag.peerlink[ansible_network_os][-1] }} mode active
+
+- name: Configure peerlink (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int {{ mlag.peerlink[ansible_network_os] }}
+        no shut
+        switchport mode trunk
+        spanning-tree link-type point-to-point
+        vpc peer-link
+
+- name: Configure member port channels (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      interface {{ item.ports|join(' ') }}
+        no shut
+        channel-group {{ item.iface.split('port-channel')[1]|int }} mode active
+      !
+      int {{ item.iface }}
+        no shut
+        vpc {{ item.mlag_id }}
+  with_items: "{{ mlag.mbr_portchannels[ansible_network_os] }}"

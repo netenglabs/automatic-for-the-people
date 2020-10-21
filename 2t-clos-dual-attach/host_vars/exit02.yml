@@ -2,6 +2,14 @@ loopback_ip: 10.0.0.32/32
 hw_address: 44:39:39:FF:41:96
 bgp_asn: "{{ ibgp_asn }}"
 
+vtep_ip:
+  cumulus:
+    - "{{ loopback_ip }}"
+  eos:
+    - "{{ loopback_ip }}"
+  nxos:
+    - 10.0.0.222/32
+
 default_vrf_firewall_ports:
   cumulus:
     - iface: swp3.2

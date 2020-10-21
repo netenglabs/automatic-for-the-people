@@ -35,7 +35,7 @@
       when: underlay == "ebgp"
       tags: underlay
     - role: cfg-mlag
-      when: mlag is defined
+      when: mlag is defined and inventory_hostname in groups['leaf']
       tags: mlag
     - role: cfg-server-ports
       when: inventory_hostname in groups['leaf']
@@ -117,6 +117,7 @@
   gather_facts: false
   roles:
     - role: cfg-save
+      tags: save
     - role: cfg-reboot
       tags: reboot
       when: ansible_network_os == "eos"

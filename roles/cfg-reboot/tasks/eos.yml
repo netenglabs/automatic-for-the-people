@@ -8,7 +8,6 @@
 - name: reset the connection 
   meta: reset_connection
 
- - name: Wait for switches to come back up (Cumulus)
-   wait_for_connection:
-        timeout: 500
-        delay: 30
+- name: wait for network device to come back up
+  wait_for_connection:
+    delay: 10

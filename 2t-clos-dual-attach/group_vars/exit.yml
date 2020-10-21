@@ -16,6 +16,8 @@ evpn_peers:
   - 10.0.0.21
   - 10.0.0.22
 
+vtep_ip: "{{ loopback_ip }}"
+
 internet_vrf: internet-vrf
 
 l2_ifs:

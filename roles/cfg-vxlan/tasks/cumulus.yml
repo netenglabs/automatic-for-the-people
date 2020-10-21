@@ -1,18 +1,4 @@
 ---
-- name: Configure VTEP (Cumulus)
-  become: yes
-  blockinfile:
-    path: /etc/network/interfaces
-    block: |
-      iface lo
-        {% if mlag is defined %}
-        vxlan-local-tunnelip {{ lo_addr }}
-        clagd-vxlan-anycast-ip {{ vtep_ip }}
-        {% else %}
-        vxlan-local-tunnelip {{ lo_addr }}
-        {% endif %}
-    marker: '#{mark} vtep'
-        
 - name: Configure VNIs (Cumulus)
   become: yes
   blockinfile:

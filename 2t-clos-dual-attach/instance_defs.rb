@@ -5,10 +5,10 @@ NUM_DCEDGE_RTRS = 1             # Hardcoded
 NUM_FIREWALL = 1                # Hardcoded
 NUM_SERVERS_PER_LEAF = 2
 
-SPINE_NOS = "cumulus"
-LEAF_NOS = "cumulus"
+SPINE_NOS = "nxos"
+LEAF_NOS = "eos"
 EXIT_NOS = "cumulus"
-DCEDGE_NOS = "cumulus"
+DCEDGE_NOS = "junos"
 FIREWALL_NOS = "ubuntu"         # Using generic/ubuntu1804
 
 # IP address 127.0.0.1 is used by spine node end of ISL

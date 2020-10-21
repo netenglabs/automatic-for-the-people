@@ -6,4 +6,18 @@
       int loopback0
         ip address {{ loopback_ip }}
 
-  tags: cfglo
+- name: Configure interface for VTEP IP (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      int loopback 1
+        ip address {{ vtep_ip[ansible_network_os][0] }}
+        {% if vtep_ip is defined and vtep_ip[ansible_network_os]|length > 1 %}
+        ip address {{ vtep_ip[ansible_network_os][1] }} secondary
+        {% endif %}
+  when: vtep_ip is defined
+
+- name: Save VTEP interface name (NXOS)
+  set_fact:
+    vtep_iface: "loopback1"
+
