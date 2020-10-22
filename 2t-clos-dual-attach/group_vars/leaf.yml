@@ -39,11 +39,11 @@ mlag:
     nxos: port-channel1
   mbr_portchannels:
     cumulus:
-      - iface: bond03
+      - iface: bond01
         ports:
           - swp3
         mlag_id: 3
-      - iface: bond04
+      - iface: bond02
         ports:
           - swp4
         mlag_id: 4
