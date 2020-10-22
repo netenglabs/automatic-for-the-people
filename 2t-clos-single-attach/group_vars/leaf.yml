@@ -33,3 +33,5 @@ l3vni_ifs: "{{ ['vni'] | zip_longest(evpn_l3_info | json_query('[*].vnid') | map
 
 l2_ifs: "{{ l2_ports[ansible_network_os] | json_query('[*].iface') | join(' ') }}"
 
+l3_vni_vid_list: "{{ evpn_l3_info | json_query('[*].vlan') }}"
+

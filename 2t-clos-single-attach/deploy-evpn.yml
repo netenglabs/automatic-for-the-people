@@ -114,6 +114,7 @@
   gather_facts: false
   roles:
     - role: cfg-save
+      tags: save
     - role: cfg-reboot
       when: ansible_network_os == "eos"
       tags: reboot

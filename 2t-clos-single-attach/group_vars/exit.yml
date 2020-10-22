@@ -21,6 +21,7 @@ internet_vrf: internet-vrf
 l2_ifs:
 l2vni_ifs:
 vid_list: "{{ evpn_l3_info | json_query('[*].vlan') }}"
+l3_vni_vid_list: "{{ evpn_l3_info | json_query('[*].vlan') }}"
 evpn_vrfs: "{{ evpn_l3_info | json_query('[*].vrf') }}"
 l3vni_ifs: "{{ ['vni'] | zip_longest(evpn_l3_info | json_query('[*].vnid') | map('string') | list, fillvalue='vni') | map('join', '') | join(' ') }}"
 
