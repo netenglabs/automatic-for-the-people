@@ -2,6 +2,16 @@ loopback_ip: 10.0.0.11/32
 hw_address: 44:39:39:FF:40:95
 bgp_asn: "{{ ibgp_asn }}"
 
+vtep_ip:
+  cumulus:
+    - "{{ loopback_ip }}"
+  eos:
+    - "{{ loopback_ip }}"
+  junos:
+    - "{{ loopback_ip }}"
+  nxos:
+    - 10.0.0.201/32
+
 l2_ports:
   cumulus:
     - iface: swp3

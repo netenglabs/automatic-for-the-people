@@ -19,7 +19,7 @@
     config: |
       feature vpc
       feature lacp
-  when: inventory_hostname in groups['leaf']
+  when: mlag_info is defined
 
 - name: Set systemwide Jumbo MTU size (NXOS)
   connection: network_cli
