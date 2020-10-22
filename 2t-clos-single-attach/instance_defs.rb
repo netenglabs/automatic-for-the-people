@@ -8,7 +8,7 @@ NUM_SERVERS_PER_LEAF = 2
 SPINE_NOS = "cumulus"
 LEAF_NOS = "cumulus"
 EXIT_NOS = "cumulus"
-DCEDGE_NOS = "junos"
+DCEDGE_NOS = "cumulus"
 FIREWALL_NOS = "ubuntu"         # Using generic/ubuntu1804
 
 # IP address 127.0.0.1 is used by spine node end of ISL
@@ -19,6 +19,6 @@ FIREWALL_NOS = "ubuntu"         # Using generic/ubuntu1804
 #
 # BASE_PORT is used to setup inter-device links using UDP.
 # DUMMY_PORT is used to setup the reserved port required by Junos VMs.
-BASE_PORT = 10900
-DUMMY_PORT = 10800
+BASE_PORT = 12900
+DUMMY_PORT = 12800
 SERVER_BASE_PORT = BASE_PORT + NUM_SPINES*100
