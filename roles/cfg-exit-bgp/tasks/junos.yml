@@ -21,7 +21,7 @@
   connection: network_cli
   cli_config:
     config: |
-      set routing-instance {{ internet_vrf }} routing-options autonomous-system {{ internet_vrf_asn }}
+      set routing-instance {{ internet_vrf }} routing-options autonomous-system {{ bgp_asn }}
       set routing-instance {{ internet_vrf }} routing-options router-id {{ internet_vrf_firewall_ports[ansible_network_os][0].address.split('/')[0] }}
       set routing-instance {{ internet_vrf }} protocols bgp group dcedge type external
       set routing-instance {{ internet_vrf }} protocols bgp group dcedge family inet unicast loops 1
