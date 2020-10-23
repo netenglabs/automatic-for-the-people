@@ -4,4 +4,4 @@
   cli_config:
     config: |
       copy running-config startup-config
-  tags: finish
+
