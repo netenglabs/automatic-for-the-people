@@ -3,8 +3,14 @@
   become: yes
   copy: src=daemons dest=/etc/frr/
 
-- name: Restart FRR
+- name: Add vagrant as a user to run net commands
   become: yes
-  service:
-    name=frr
-    state=restarted
+  lineinfile:
+    path: /etc/netd.conf
+    regexp: '^users_with_show = root, cumulus'
+    line: users_with_show = root, cumulus, vagrant
+
+- name: Restart netd
+  become: yes  
+  service: name=netd state=restarted
+  
