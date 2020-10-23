@@ -21,7 +21,8 @@
 - hosts: spine:leaf:exit
   gather_facts: false
   roles:
-    - cfg-features
+    - role: cfg-features
+      tags: features
     - role: cfg-ospf-isl
       when: underlay == "ospf"
       tags: isl-ports
