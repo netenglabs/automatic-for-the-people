@@ -1,12 +1,12 @@
 ---
  - name: Add FRR repo key
    apt_key:
-     url: https://deb.frrouting.org/frr/keys.asc
+     url: https://deb-us.frrouting.org/frr/keys.asc
      state: present
 
  - name: Add FRR repo
    apt_repository:
-     repo: deb https://deb.frrouting.org/frr bionic frr-stable
+     repo: deb https://deb-us.frrouting.org/frr bionic frr-stable
      state: present
      update_cache: yes
 
