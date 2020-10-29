@@ -10,7 +10,7 @@
   cli_config:
     config: |
       set routing-instance {{ item.vrf }} routing-options router-id {{ item.junos_vrf_loopback_ip[inventory_hostname].split('/')[0] }}
-      set routing-instance {{ item.vrf }} routing-options autonomous-system {{ ibgp_asn }}
+      set routing-instance {{ item.vrf }} routing-options autonomous-system {{ bgp_asn }}
       set policy-options policy-statement SUMMARY-EVPN-RT term 1 from route-filter 172.16.0.0/16 prefix-length-range /24-/24
       set policy-options policy-statement SUMMARY-EVPN-RT term 1 then accept
       set routing-instance {{ item.vrf }} protocols bgp group firewall type external
