@@ -1,11 +1,11 @@
-frr defaults traditional
+frr defaults datacenter
 hostname edge01
 no ip forwarding
 no ipv6 forwarding
 !
 service integrated-vtysh-config
 !
-log syslog
+log file /var/log/frr/frr.log
 !
 router bgp {{ bgp_asn }}
  bgp router-id {{ lo_addr }}
