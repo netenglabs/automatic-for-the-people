@@ -25,5 +25,5 @@
   connection: network_cli
   cli_config:
     config: |
-      system jumbomtu 9200
+      system jumbomtu 9216
 

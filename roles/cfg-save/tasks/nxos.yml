@@ -1,7 +1,12 @@
 ---
-- name: Save running-config to startup-config
+- name: Download running config
   connection: network_cli
-  cli_config:
-    config: |
-      copy running-config startup-config
+  cli_command:
+     command: show run
+  register: backup
 
+- name: Save to local file
+  connection: network_cli
+  copy:
+     content: "{{backup.stdout}}"
+     dest: "snapshot/configs/{{inventory_hostname}}.cfg"

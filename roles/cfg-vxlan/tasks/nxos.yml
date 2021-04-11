@@ -74,6 +74,7 @@
         vrf member {{ item.vrf }}
         no shut
         ip forward
+        mtu 9000
         fabric forwarding mode anycast-gateway
 
       int nve1
@@ -91,6 +92,7 @@
         vrf member {{ l2_networks[item.vlanid].vrf }}
         no shut
         ip address {{ l2_networks[item.vlanid].ip_address }}
+        mtu 9000
         fabric forwarding mode anycast-gateway
   with_items: "{{ l2_ports[ansible_network_os] }}"
   when: l2_ports is defined

@@ -6,7 +6,7 @@
       router bgp {{ ibgp_asn }}
         template peer FIREWALL
           address-family ipv4 unicast
-            soft-reconfiguration inbound
+            soft-reconfiguration inbound always
 
 - name: Assign neighbors to FW in default VRF BGP (NXOS)
   connection: network_cli

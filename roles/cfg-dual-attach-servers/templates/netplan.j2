@@ -13,6 +13,7 @@ network:
         - eth1
         - eth2
       addresses: [ {{ server_ip }} ]
+      mtu: 1500
       parameters:
         mode: 802.3ad
         mii-monitor-interval: 100
