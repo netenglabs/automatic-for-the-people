@@ -16,6 +16,8 @@
         neighbor {{ item.address }}
           remote-as {{ item.remote_asn }}
           inherit peer FIREWALL
+          address-family ipv4 unicast
+            local-as 65520 no-prepend replace-as
   with_items: "{{ firewall_bgp_peers_default_vrf }}"
 
 - name: eBGP aggregate address for FW in EVPN VRFs (NXOS)
@@ -37,6 +39,8 @@
           neighbor {{ item.address }}
             remote-as {{ item.remote_asn }}
             inherit peer FIREWALL
+            address-family ipv4 unicast
+              local-as {{ evpn_vrf_asn }} no-prepend replace-as
   with_items: "{{ firewall_bgp_peers_evpn_vrfs }}"
   
 - name: Assign neighbors to FW in internet VRfs (NXOS)
@@ -49,7 +53,7 @@
             remote-as {{ item.remote_asn }}
             inherit peer FIREWALL
             address-family ipv4 unicast
-              allowas-in 1
+              local-as {{ internet_vrf_asn }} no-prepend replace-as
   with_items: "{{ firewall_bgp_peers_internet_vrfs }}"
 
 - name: Assign neighbors to DCEdge routers (NXOS)
@@ -61,4 +65,6 @@
           neighbor {{ item.address }}
             remote-as {{ item.remote_asn }}
             inherit peer FIREWALL
+            address-family ipv4 unicast
+              local-as {{ internet_vrf_asn }} no-prepend replace-as
   with_items: "{{ dcedge_bgp_peers }}"

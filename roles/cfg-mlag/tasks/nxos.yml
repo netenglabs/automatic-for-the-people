@@ -26,9 +26,9 @@
     config: |
       int {{ mlag.peerlink[ansible_network_os] }}
         no shut
+        switchport
         switchport mode trunk
         spanning-tree link-type point-to-point
-        mtu 9216
         vpc peer-link
 
 - name: Configure member port channels (NXOS)
@@ -37,6 +37,7 @@
     config: |
       interface {{ item.ports|join(' ') }}
         no shut
+        switchport
         channel-group {{ item.iface.split('port-channel')[1]|int }} mode active
       !
       int {{ item.iface }}

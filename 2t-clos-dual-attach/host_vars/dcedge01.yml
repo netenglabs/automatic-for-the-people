@@ -25,6 +25,6 @@ isl_ports:
 
 dcedge_bgp_peers:
   - peer: 169.254.127.1
-    remote_asn: "{{ ibgp_asn }}"
+    remote_asn: "{{ internet_vrf_asn }}"
   - peer: 169.254.127.3
-    remote_asn: "{{ ibgp_asn }}"
+    remote_asn: "{{ internet_vrf_asn }}"

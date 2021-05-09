@@ -13,7 +13,7 @@ network:
         - eth1
         - eth2
       addresses: [ {{ server_ip }} ]
-      mtu: 1500
+      mtu: 9216
       parameters:
         mode: 802.3ad
         mii-monitor-interval: 100
@@ -22,4 +22,6 @@ network:
         transmit-hash-policy: layer3+4
       routes:
         - to: 172.16.0.0/16
+          via: {{ gateway }}
+        - to: 10.0.0.0/24
           via: {{ gateway }}

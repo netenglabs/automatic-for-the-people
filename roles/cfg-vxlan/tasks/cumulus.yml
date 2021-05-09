@@ -6,7 +6,7 @@
     block: |
       auto {{ ['vni', l2_networks[item.vlanid].vnid|string]|join('') }}
       iface {{ ['vni', l2_networks[item.vlanid].vnid|string]|join('') }}
-        mtu 9200
+        mtu 9216
         vxlan-id {{ l2_networks[item.vlanid].vnid }}
         bridge-learning off
         bridge-access {{ item.vlanid }}
@@ -48,7 +48,7 @@
     block: |
       auto {{ ['vni', item.vnid|string]|join('') }}
       iface {{ ['vni', item.vnid|string]|join('') }}
-        mtu 9200
+        mtu 9216
         vxlan-id {{ item.vnid }}
         mstpctl-bpduguard yes
         mstpctl-portbpdufilter yes
@@ -57,7 +57,7 @@
 
       auto {{ item.vlanif }}
       iface {{ item.vlanif }}
-        mtu 9200
+        mtu 9216
         hwaddress {{ hw_address }}
         vlan-id {{ item.vlan }}
         vlan-raw-device bridge

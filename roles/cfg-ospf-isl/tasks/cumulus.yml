@@ -7,7 +7,7 @@
       auto {{ item }}
       iface {{ item }} inet manual
         address {{ loopback_ip }}
-        mtu 9200
+        mtu 9216
     marker: "# {mark} {{ item }}"
   with_items: "{{ isl_ports[ansible_network_os] }}"
   tags: ospf-isl-cfg

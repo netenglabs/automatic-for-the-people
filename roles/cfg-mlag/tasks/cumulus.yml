@@ -7,13 +7,13 @@
       {% for port in portchannels[ansible_network_os][mlag.peerlink[ansible_network_os]].ports %}
       auto {{ port }}
       iface {{ port }}
-        mtu 9200
+        mtu 9216
         post-up ip link set promisc on dev {{ port }}
       #
       {% endfor %}
       auto {{ mlag.peerlink[ansible_network_os] }}
       iface {{ mlag.peerlink[ansible_network_os] }}
-         mtu 9200
+         mtu 9216
          bond-slaves {{ portchannels[ansible_network_os][mlag.peerlink[ansible_network_os]].ports | join(' ') }}
       #
     marker: '#{mark} {{mlag.peerlink }}'

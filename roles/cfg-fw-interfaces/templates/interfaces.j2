@@ -1,6 +1,6 @@
 auto lo
 iface lo inet static
-   address {{ lo_addr }}
+   address {{ lo_addr }}/32
 
 auto eth0
 iface eth0 inet dhcp

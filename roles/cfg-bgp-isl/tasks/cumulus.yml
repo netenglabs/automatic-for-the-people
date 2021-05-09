@@ -7,7 +7,7 @@
       {% for iface, value in ebgp_cfg[ansible_network_os][inventory_hostname].items() %}
       auto {{ iface }}
       iface {{ iface }}
-         mtu 9200
+         mtu 9216
          address {{ value.address }}
       {% endfor %}
     marker: '#{mark} isl-ports'

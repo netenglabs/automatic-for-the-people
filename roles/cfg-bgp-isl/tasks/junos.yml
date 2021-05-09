@@ -3,7 +3,7 @@
   connection: network_cli
   cli_config:
     config: |
-      set interfaces {{ item }} mtu 9200
+      set interfaces {{ item }} mtu 9216
       delete interfaces {{ item }} unit 0 family inet dhcp
       set interfaces {{ item }} unit 0 family inet address {{ ebgp_cfg[ansible_network_os][inventory_hostname][item].address }}
   with_items: "{{ ebgp_cfg[ansible_network_os][inventory_hostname] }}"

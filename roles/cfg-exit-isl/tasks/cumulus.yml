@@ -7,7 +7,7 @@
       auto {{ item.iface }}
       iface {{ item.iface }} inet manual
         address {{ item.address }}
-        mtu 9200
+        mtu 9216
     marker: "# {mark} {{ item.iface }}"
   with_items: "{{ default_vrf_firewall_ports[ansible_network_os] }}"
   notify:
@@ -22,7 +22,7 @@
       iface {{ item.iface }} inet manual
         address {{ item.address }}
         vrf {{ item.vrf }}
-        mtu 9200
+        mtu 9216
     marker: "# {mark} {{ item.iface }}"
   with_items: "{{ evpn_vrf_firewall_ports[ansible_network_os] }}"
   notify:
@@ -49,7 +49,7 @@
       iface {{ item.iface }} inet manual
         address {{ item.address }}
         vrf {{ internet_vrf }}
-        mtu 9200
+        mtu 9216
     marker: "# {mark} {{ item.iface }}"
   with_items: "{{ internet_vrf_firewall_ports[ansible_network_os] }}"
   notify:
@@ -64,7 +64,7 @@
       iface {{ item.iface }} inet manual
         address {{ item.address }}
         vrf {{ internet_vrf }}
-        mtu 9200
+        mtu 9216
     marker: "# {mark} {{ item.iface }}"
   with_items: "{{ dcedge_ports[ansible_network_os] }}"
   notify:

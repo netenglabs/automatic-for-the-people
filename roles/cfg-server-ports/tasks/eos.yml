@@ -5,7 +5,7 @@
     config: |
       int {{ item.iface }}
          switchport access vlan {{ item.vlanid }}
-         mtu 9164
+         mtu 9000
   with_items: " {{ l2_ports[ansible_network_os] }}"
 
 - name: configure SVI (EOS)
@@ -14,7 +14,7 @@
     config: |
       int {{ l2_networks[item.vlanid].vlanif }}
         no shut
-        mtu 9164
+        mtu 9000
         ip address virtual {{ l2_networks[item.vlanid].ip_address }}
   with_items: "{{ l2_ports[ansible_network_os] }}"
 

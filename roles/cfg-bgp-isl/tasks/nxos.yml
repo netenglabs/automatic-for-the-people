@@ -6,6 +6,6 @@
       int {{ item }}
         no switchport
         no shut
-        mtu 9200
+        mtu 9216
         ip address {{ ebgp_cfg[ansible_network_os][inventory_hostname][item].address }}
   with_items: "{{ ebgp_cfg[ansible_network_os][inventory_hostname] }}"

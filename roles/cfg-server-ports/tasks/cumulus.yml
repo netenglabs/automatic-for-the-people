@@ -6,7 +6,7 @@
     block: |
       auto {{ item.iface }}
       iface {{ item.iface }}
-         mtu 9164
+         mtu 9000
          bridge-access {{ item.vlanid }}
     marker: "# {mark} l2port-{{ item.iface }}"
   with_items: "{{ l2_ports[ansible_network_os] }}"
@@ -39,7 +39,7 @@
         {% if l2_networks[item.vlanid].vrf != "default" %}
         vrf {{ l2_networks[item.vlanid].vrf }}
         {% endif %}
-        mtu 9164
+        mtu 9000
         address {{ l2_networks[item.vlanid].ip_address }}
         hwaddress {{ anycast_gw_mac }}
         vlan-id {{ item.vlanid }}

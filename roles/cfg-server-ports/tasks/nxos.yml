@@ -6,7 +6,7 @@
       int {{ item.iface }}
         switchport
         switchport access vlan {{ item.vlanid }}
-        mtu 1500
+        mtu 9216
   with_items: "{{ l2_ports[ansible_network_os] }}"
 
 - name: configure SVI (NXOS)
@@ -15,7 +15,7 @@
     config: |
      interface {{ l2_networks[item.vlanid].vlanif }}
        no shutdown
-       mtu 1500
+       mtu 9000
        ip address {{ l2_networks[item.vlanid].ip_address }}
 
   with_items: "{{ l2_ports[ansible_network_os] }}"

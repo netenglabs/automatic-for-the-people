@@ -1,8 +1,8 @@
 ! We use datacenter to avoid configuring additional BGP policies for tx/rx advt
 frr defaults datacenter
 hostname edge01
-no ip forwarding
-no ipv6 forwarding
+ip forwarding
+ipv6 forwarding
 !
 service integrated-vtysh-config
 !

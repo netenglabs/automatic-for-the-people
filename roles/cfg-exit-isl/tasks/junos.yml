@@ -3,7 +3,7 @@
   connection: network_cli
   cli_config:
     config: |
-      set interfaces {{ item.iface }} mtu 9200
+      set interfaces {{ item.iface }} mtu 9216
       set interfaces {{ item.iface }} flexible-vlan-tagging
       set interfaces {{ item.iface }} encapsulation flexible-ethernet-services
       delete interfaces {{ item.iface }} unit 0
@@ -16,7 +16,7 @@
   connection: network_cli
   cli_config:
     config: |
-      set interfaces {{ item.iface }} mtu 9200
+      set interfaces {{ item.iface }} mtu 9216
       set interfaces {{ item.iface }} flexible-vlan-tagging
       set interfaces {{ item.iface }} encapsulation flexible-ethernet-services
       delete interfaces {{ item.iface }} unit 0      
@@ -32,7 +32,7 @@
       set routing-instances {{ internet_vrf }} instance-type vrf
       set routing-instances {{ internet_vrf }} route-distinguisher {{ lo_addr }}:{{item.vlan}}
       set routing-instances {{ internet_vrf }} vrf-target target:{{ibgp_asn}}:{{item.vlan}}
-      set interfaces {{ item.iface }} mtu 9200
+      set interfaces {{ item.iface }} mtu 9216
       set interfaces {{ item.iface }} flexible-vlan-tagging
       set interfaces {{ item.iface }} encapsulation flexible-ethernet-services
       delete interfaces {{ item.iface }} unit 0      
