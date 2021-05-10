@@ -24,19 +24,19 @@
       vlan {{ mlag.peerlink_vlan[ansible_network_os] }}
         trunk group peertrunk
       !
-      int vlan {{ mlag.peerlink_vlan }}
+      int vlan {{ mlag.peerlink_vlan[ansible_network_os] }}
         ip address {{ mlag_info.peerlink_ip }}
         no autostate
         no shut
       !
-      no spanning-tree vlan-id 4094
+      no spanning-tree vlan-id {{ mlag.peerlink_vlan[ansible_network_os] }}
 
 - name: Configure MLAG (EOS)
   connection: network_cli
   cli_config:
     config: |
       mlag configuration
-        local-interface vlan {{ mlag.peerlink_vlan }}
+        local-interface vlan {{ mlag.peerlink_vlan[ansible_network_os] }}
         peer-address {{ hostvars[mlag_info.peer_switch].mlag_info.peerlink_ip.split('/')[0] }}
         peer-link {{ mlag.peerlink[ansible_network_os] }}
         domain-id {{ mlag_info.eos_domainid }}
