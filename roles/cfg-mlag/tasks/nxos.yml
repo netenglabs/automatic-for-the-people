@@ -20,7 +20,7 @@
         no shut
         channel-group {{ mlag.peerlink[ansible_network_os][-1] }} mode active
 
-- name: Configure peerlink (NXOS)
+- name: Configure peerlink and infra VLAN (NXOS)
   connection: network_cli
   cli_config:
     config: |
@@ -30,6 +30,21 @@
         switchport mode trunk
         spanning-tree link-type point-to-point
         vpc peer-link
+
+- name: Configure VLAN Interface on peerlink (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+     vlan {{ mlag.peerlink_vlan[ansible_network_os] }}
+     !
+     interface vlan {{ mlag.peerlink_vlan[ansible_network_os] }}
+       no shutdown
+       mtu 9216
+       no ip redirects
+       ip address {{ mlag_info.peerlink_ip }}
+       no ipv6 redirects
+       ip ospf network point-to-point
+       ip router ospf UNDERLAY area 0.0.0.0
 
 - name: Configure member port channels (NXOS)
   connection: network_cli

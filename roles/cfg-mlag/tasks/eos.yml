@@ -21,7 +21,7 @@
   connection: network_cli
   cli_config:
     config: |
-      vlan {{ mlag.peerlink_vlan }}
+      vlan {{ mlag.peerlink_vlan[ansible_network_os] }}
         trunk group peertrunk
       !
       int vlan {{ mlag.peerlink_vlan }}

@@ -5,6 +5,7 @@
     config: |
       interface nve1
         no shutdown
+        advertise virtual-rmac
         host-reachability protocol bgp
         source-interface {{ vtep_iface }}
   when: inventory_hostname not in groups['spine']
@@ -65,18 +66,13 @@
 
       vrf context {{ item.vrf }}
          vni {{ item.vnid }}
-         rd auto
-         address-family ipv4 unicast
-           route-target both auto
-           route-target both auto evpn
 
       interface {{ item.vlanif }}
         vrf member {{ item.vrf }}
         no shut
         ip forward
-        mtu 9000
-        fabric forwarding mode anycast-gateway
-
+        mtu 9216
+        
       int nve1
         !
         member vni {{ item.vnid }} associate-vrf

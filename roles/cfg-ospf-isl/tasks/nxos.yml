@@ -17,6 +17,7 @@
   cli_config:
     config: |
       int {{ item }}
+         ip ospf network point-to-point
          ip router ospf UNDERLAY area 0.0.0.0
   with_items: "{{ isl_ports[ansible_network_os] }}"
   tags: ospf-isl-cfg

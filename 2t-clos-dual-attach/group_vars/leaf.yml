@@ -32,7 +32,10 @@ portchannels:
         Eth1/5-6
 
 mlag:
-  peerlink_vlan: 4094
+  peerlink_vlan:
+    cumulus: 4094
+    eos: 4094
+    nxos: 3960
   peerlink:
     cumulus: peerlink
     eos: port-channel1

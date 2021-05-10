@@ -1,16 +1,4 @@
 ---
-- name: Assign RD/RT for L2VNI (NXOS)
-  connection: network_cli
-  cli_config:
-    config: |
-     evpn
-       vni {{ l2_networks[item.vlanid].vnid }} l2
-         rd auto
-         route-target import auto
-         route-target export auto
-  with_items: "{{ l2_ports[ansible_network_os] }}"
-  when: l2_ports is defined
-      
 - name: iBGP base config fr leafs (NXOS)
   connection: network_cli
   cli_config:

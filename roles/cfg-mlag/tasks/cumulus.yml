@@ -23,8 +23,8 @@
   blockinfile:
     path: /etc/network/interfaces
     block: |
-      auto {{ mlag.peerlink[ansible_network_os]}}.{{mlag.peerlink_vlan }}
-      iface {{ mlag.peerlink[ansible_network_os]}}.{{mlag.peerlink_vlan }}
+      auto {{ mlag.peerlink[ansible_network_os]}}.{{mlag.peerlink_vlan[ansible_network_os] }}
+      iface {{ mlag.peerlink[ansible_network_os]}}.{{mlag.peerlink_vlan[ansible_network_os] }}
          clagd-peer-ip linklocal
          clagd-sys-mac {{ mlag_info.clag_sysid }}
          {% if mlag.backup_ip is defined %}
