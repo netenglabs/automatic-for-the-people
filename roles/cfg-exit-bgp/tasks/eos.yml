@@ -15,6 +15,7 @@
       router bgp {{ ibgp_asn }}
         neighbor {{ item.address }} remote-as {{ item.remote_asn }}
         neighbor {{ item.address }} peer group FW
+        neighbor {{ item.address }} local-as {{ default_vrf_asn }} no-prepend replace-as
   with_items: "{{ firewall_bgp_peers_default_vrf }}"
 
 - name: eBGP aggregate address for FW in EVPN VRFs (EOS)
@@ -35,6 +36,7 @@
         vrf {{ item.vrf }}
           neighbor {{ item.address }} remote-as {{ item.remote_asn }}
           neighbor {{ item.address }} peer group FW
+          neighbor {{ item.address }} local-as {{ evpn_vrf_asn }} no-prepend replace-as
   with_items: "{{ firewall_bgp_peers_evpn_vrfs }}"
   
 - name: Assign neighbors to FW in internet VRfs (EOS)
@@ -45,9 +47,9 @@
         vrf {{ internet_vrf }}
           neighbor {{ item.address }} remote-as {{ item.remote_asn }}
           neighbor {{ item.address }} peer group FW
+          neighbor {{ item.address }} local-as {{ internet_vrf_asn }} no-prepend replace-as          
           address-family ipv4
              neighbor FW activate
-             neighbor FW allowas-in 1
   with_items: "{{ firewall_bgp_peers_internet_vrfs }}"
 
 - name: Assign neighbors to DCEdge routers (EOS)
@@ -58,6 +60,7 @@
         vrf {{ internet_vrf }}
           neighbor {{ item.address }} remote-as {{ item.remote_asn }}
           neighbor {{ item.address }} peer group FW
+          neighbor {{ item.address }} local-as {{ internet_vrf_asn }} no-prepend replace-as          
           address-family ipv4
              neighbor FW activate
   with_items: "{{ dcedge_bgp_peers }}"

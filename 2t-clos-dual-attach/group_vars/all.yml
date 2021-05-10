@@ -1,5 +1,6 @@
 replication: ingress-replication
 ibgp_asn: 64520
+default_vrf_asn: 65520
 internet_vrf_asn: 65522
 evpn_vrf_asn: 65521
 lo_addr: "{{ loopback_ip.split('/')[0] }}"

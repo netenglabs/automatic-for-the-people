@@ -1,4 +1,17 @@
 ---
+- hosts: localhost
+  tasks:
+    - name: Makeup the directory to store configs
+      file:
+        path: "configs/{{item}}/"
+        state: directory
+      with_items:
+        - nxos
+        - eos
+        - junos
+        - cumulus
+      tags: backup
+    
 - hosts: spine:leaf:exit:dcedge
   gather_facts: false
   roles:
@@ -119,7 +132,11 @@
   roles:
     - role: cfg-save
       tags: save
+    - role: cfg-backup
+      tags: backup
     - role: cfg-reboot
       tags: reboot
       when: ansible_network_os == "eos"
   
+
+      

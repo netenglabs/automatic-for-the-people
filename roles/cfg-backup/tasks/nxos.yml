@@ -1,0 +1,12 @@
+---
+- name: Download running config
+  connection: network_cli
+  cli_command:
+     command: show run
+  register: backup
+
+- name: Save to local file
+  connection: network_cli
+  copy:
+     content: "{{backup.stdout}}"
+     dest: "configs/{{ansible_network_os}}/{{inventory_hostname}}.cfg"

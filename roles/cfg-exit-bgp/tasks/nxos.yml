@@ -17,7 +17,7 @@
           remote-as {{ item.remote_asn }}
           inherit peer FIREWALL
           address-family ipv4 unicast
-            local-as 65520 no-prepend replace-as
+            local-as {{ default_vrf_asn }} no-prepend replace-as
   with_items: "{{ firewall_bgp_peers_default_vrf }}"
 
 - name: eBGP aggregate address for FW in EVPN VRFs (NXOS)
