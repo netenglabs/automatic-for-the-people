@@ -76,6 +76,15 @@
   with_items: "{{ evpn_l3_info }}"
   when: inventory_hostname not in groups['spine']
 
+- name: Route map for L3 VNI adv
+  connection: network_cli
+  cli_config:
+    config: |
+      ip prefix-list ATTACHED_SVIS seq 10 permit 172.16.0.0/16 ge 24
+      !
+      route-map ADV_SVIS permit 10
+        match ip address prefix-list ATTACHED_SVIS
+
 - name: iBGP EVPN VRFs config to advertise subnet route (EOS)
   connection: network_cli
   cli_config:
@@ -83,7 +92,8 @@
       router bgp {{ ibgp_asn }}
         vrf {{ l2_networks[item.vlanid].vrf }}
           address-family ipv4
-            network {{ l2_networks[item.vlanid].ip_subnet  }}
+            redistribute connected route-map ADV_SVIS
+            maximum-paths 4
   with_items: "{{ l2_ports[ansible_network_os] }}"
   when: l2_ports is defined
         
