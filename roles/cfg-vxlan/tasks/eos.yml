@@ -8,6 +8,13 @@
          vxlan udp-port 4789
          vxlan learn-restrict any
 
+- name: Configure anycast gateway (EOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      ip virtual-router mac-address {{ nxos_fabric_anycast_gw_mac }}
+  when: inventory_hostname not in groups['spine']
+
 - name: Configure VNIs (EOS)
   connection: network_cli
   cli_config:
@@ -43,5 +50,6 @@
         mtu 9164
         vrf {{ l2_networks[item.vlanid].vrf }}
         ip address virtual {{ l2_networks[item.vlanid].ip_address }}
+        mac address virtual-router
   with_items: "{{ l2_ports[ansible_network_os] }}"
   when: l2_ports is defined
