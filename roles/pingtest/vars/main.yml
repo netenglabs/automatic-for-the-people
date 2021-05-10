@@ -1,0 +1,19 @@
+ping_gateway:
+  server101: 172.16.1.254
+  server102: 172.16.3.254
+  server301: 172.16.2.254
+  server302: 172.16.3.254
+
+ping_local_nbr:
+  server101: 172.16.3.102
+  server102: 172.16.1.101
+  server301: 172.16.3.202
+  server302: 172.16.2.201
+
+ping_remote_nbr:
+  server101: 172.16.3.202
+  server102: 172.16.2.201
+  server301: 172.16.1.101
+  server302: 172.16.3.102
+
+internet_edge_ip: 10.0.0.41
