@@ -54,3 +54,17 @@
               route-reflector-client
   with_items: "{{ evpn_peers }}"
   when: inventory_hostname in groups['spine']  
+
+- name: Advertise L3 GW address (NXOS)                                                                  
+  connection: network_cli                          
+  cli_config:                                                                                           
+    config: |                                                                                           
+      router bgp {{ ibgp_asn }}                    
+        vrf {{ l2_networks[item.vlanid].vrf }}                                                          
+          log-neighbor-changes                                                                          
+          address-family ipv4 unicast                                                                   
+            network {{ l2_networks[item.vlanid].ip_subnet  }}                                           
+            advertise l2vpn evpn                                                                        
+                                                                                                        
+  with_items: "{{ l2_ports[ansible_network_os] }}"                                                      
+  when: l2_ports is defined                                  
