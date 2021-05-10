@@ -1,13 +1,13 @@
 ---
-- name: Reload the system
+- name: Reload the system (EOS)
   connection: network_cli
   cli_command:
     command: |
       reload now
 
-- name: reset the connection 
+- name: reset the connection (EOS)
   meta: reset_connection
 
-- name: wait for network device to come back up
-  wait_for_connection:
-    delay: 10
+- name: wait for network device to come back up (EOS)
+  pause: 
+    minutes: 4
