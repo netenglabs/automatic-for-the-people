@@ -1,0 +1,21 @@
+---
+- name: Download FRR running config
+  command: sudo vtysh -c 'show run'
+  register: backup
+
+- name: Save to local file
+  local_action: 
+    module: copy
+    content: "{{backup.stdout}}"
+    dest: "configs/{{ansible_network_os}}/{{inventory_hostname}}-frr.conf"
+
+- name: Download interfaces
+  command: /usr/sbin/ifquery -a
+  register: backup
+
+- name: Save to local file
+  local_action:
+    module: copy
+    content: "{{backup.stdout}}"
+    dest: "configs/{{ansible_network_os}}/{{inventory_hostname}}-interfaces.conf"
+     

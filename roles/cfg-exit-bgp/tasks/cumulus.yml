@@ -10,6 +10,7 @@
          neighbor FW bfd
          {% for port in default_vrf_firewall_ports[ansible_network_os] %}
          neighbor {{ port.iface }} interface peer-group FW
+         neighbor {{ port.iface }} local-as {{ default_vrf_asn }} no-prepend replace-as
          {% endfor %}
          !
          address-family ipv4 unicast
@@ -28,6 +29,7 @@
          {% for port in evpn_vrf_firewall_ports[ansible_network_os] %}
          {% if port.vrf == vrf %}
          neighbor {{ port.iface }} interface peer-group ISL
+         neighbor {{ port.iface }} local-as {{ evpn_vrf_asn }} no-prepend replace-as         
          {% endif %}
          {% endfor %}
          !
@@ -36,6 +38,8 @@
            {% for item in l2_networks %}
            aggregate-address {{ l2_networks[item].ip_subnet }} summary-only attribute-map LOWER_AGGRT_PREF
            {% endfor %}
+        address-family l2vpn evpn
+           advertise ipv4 unicast
       {% endfor %}
          !
       router bgp {{ ibgp_asn }} vrf {{ internet_vrf }}
@@ -49,16 +53,15 @@
          neighbor FW bfd
          {% for port in internet_vrf_firewall_ports[ansible_network_os] %}
          neighbor {{ port.iface }} interface peer-group FW
+         neighbor {{ port.iface }} local-as {{ internet_vrf_asn }} no-prepend replace-as
          {% endfor %}
          {% for port in dcedge_ports[ansible_network_os] %}
          neighbor {{ port.iface }} interface peer-group EDGE
+         neighbor {{ port.iface }} local-as {{ internet_vrf_asn }} no-prepend replace-as
          {% endfor %}
          address-family ipv4 unicast
             neighbor FW activate
             neighbor EDGE activate
-            neighbor FW allowas-in 1
-        address-family l2vpn evpn
-           advertise ipv4 unicast
          !
     marker: '!{mark} edge-firewall-ports'
   notify:
