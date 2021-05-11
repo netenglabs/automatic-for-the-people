@@ -18,6 +18,13 @@
         neighbor {{ item.address }} local-as {{ default_vrf_asn }} no-prepend replace-as
   with_items: "{{ firewall_bgp_peers_default_vrf }}"
 
+- name: Define route-map to lower local pref of exit routes (NXOS)
+  connection: network_cli
+  cli_config:
+    config: |
+      route-map LOWER_AGGRT_PREF permit 10
+         set local-preference 10
+
 - name: eBGP aggregate address for FW in EVPN VRFs (EOS)
   connection: network_cli
   cli_config:
@@ -25,7 +32,7 @@
       router bgp {{ ibgp_asn }}
         vrf {{ l2_networks[item].vrf }}
           address-family ipv4
-            aggregate-address {{ l2_networks[item].ip_subnet }} summary-only
+            aggregate-address {{ l2_networks[item].ip_subnet }} summary-only attribute-map LOWER_AGGRT_PREF
   with_items: "{{ l2_networks }}"
 
 - name: Assign neighbors to FW in EVPN VRfs (EOS)

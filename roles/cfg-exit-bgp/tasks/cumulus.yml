@@ -17,6 +17,9 @@
          exit-address-family
          !
       {% for vrf in evpn_vrfs %}
+      route-map LOWER_AGGRT_PREF permit 10
+         set local-preference 10
+      !
       router bgp {{ ibgp_asn }} vrf {{ vrf }}
          bgp router-id {{ lo_addr }}
          no bgp default ipv4-unicast
@@ -31,7 +34,7 @@
          address-family ipv4 unicast
            neighbor ISL activate
            {% for item in l2_networks %}
-           aggregate-address {{ l2_networks[item].ip_subnet }} summary-only
+           aggregate-address {{ l2_networks[item].ip_subnet }} summary-only attribute-map LOWER_AGGRT_PREF
            {% endfor %}
       {% endfor %}
          !
