@@ -13,6 +13,7 @@
   cli_config:
     config: |
       set protocols ospf area 0.0.0.0 interface {{ item }}.0 interface-type p2p
+      set protocols ospf area 0.0.0.0 interface {{ item }}.0 bfd-liveness-detection minimum-interval 2000 multiplier 3
   with_items: "{{ isl_ports[ansible_network_os] }}"
 
 

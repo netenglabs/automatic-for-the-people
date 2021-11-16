@@ -75,16 +75,13 @@
   blockinfile:
     path: /etc/frr/frr.conf
     block: |
-      ip prefix-list ATTACHED_SVIS seq 10 permit 172.16.0.0/16 ge 24
-      !
-      route-map ADV_SVIS permit 10
-         match ip address prefix-list ADV_SVIS
-      !
       {% for item in evpn_l3_info %}
       router bgp {{ ibgp_asn }} vrf {{ item.vrf }}
         bgp router-id {{ lo_addr }}
         address-family ipv4 unicast
-           redistribute connected route-map ADV_SVIS
+           {% for vid in vid_list %}
+           network {{ l2_networks[vid].ip_subnet }}
+           {% endfor %}
         !
         address-family l2vpn evpn
            advertise ipv4 unicast

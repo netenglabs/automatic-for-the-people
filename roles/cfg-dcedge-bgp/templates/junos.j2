@@ -6,6 +6,10 @@ set policy-options policy-statement DEF-ADV term 2 from protocol access-internal
 set policy-options policy-statement DEF-ADV term 2 then accept
 set protocols bgp group ISL type external
 set protocols bgp group ISL export DEF-ADV
+set protocols bgp group ISL bfd-liveness-detection minimum-interval 700
+set protocols bgp group ISL bfd-liveness-detection multiplier 3
+set protocols bgp group ISL bfd-liveness-detection detection-time threshold 2500
+set protocols bgp group ISL bfd-liveness-detection session-mode automatic
 
 {% for peer in dcedge_bgp_peers %}
 set protocols bgp group ISL neighbor {{ peer.peer }} peer-as {{ peer.remote_asn }}

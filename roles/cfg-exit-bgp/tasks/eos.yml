@@ -68,6 +68,7 @@
           neighbor {{ item.address }} remote-as {{ item.remote_asn }}
           neighbor {{ item.address }} peer group FW
           neighbor {{ item.address }} local-as {{ internet_vrf_asn }} no-prepend replace-as          
+          neighbor {{ item.address }} bfd
           address-family ipv4
              neighbor FW activate
   with_items: "{{ dcedge_bgp_peers }}"

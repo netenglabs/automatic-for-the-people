@@ -52,4 +52,5 @@
   cli_config:
     config: |
       set routing-instance {{ internet_vrf }} protocols bgp group dcedge neighbor {{ item.address }} peer-as {{ item.remote_asn }}
+      set routing-instances {{ internet_vrf }} protocols bgp group dcedge neighbor {{ item.address }} bfd-liveness-detection minimum-interval 2000 multiplier 3
   with_items: "{{ dcedge_bgp_peers }}"
