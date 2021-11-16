@@ -1,17 +1,23 @@
 ---
- - name: Add FRR repo key
-   apt_key:
-     url: https://deb-us.frrouting.org/frr/keys.asc
-     state: present
+ - name: Download FRR packages
+   get_url:
+     url: https://deb.frrouting.org/frr/pool/frr-stable/f/frr/frr_8.1-0~ubuntu18.04.1_amd64.deb
+     dest: /tmp/frr.deb
 
- - name: Add FRR repo
-   apt_repository:
-     repo: deb https://deb-us.frrouting.org/frr bionic frr-stable
-     state: present
-     update_cache: yes
+ - name: Download libyang2 repo
+   get_url:
+     url: https://deb.frrouting.org/frr/pool/frr-stable/liby/libyang2/libyang2_2.0.7-1~ubuntu18.04u1_amd64.deb
+     dest: /tmp/libyang2.deb
 
- - name: Add FRR
-   apt:
-     name: frr
-     state: present
- 
+ - name: Download frr-pythontools repo
+   get_url:
+     url: https://deb.frrouting.org/frr/pool/frr-stable/f/frr/frr-pythontools_8.1-0~ubuntu18.04.1_all.deb
+     dest: /tmp/frr-pythontools.deb
+
+ - name: Add dependent packages
+   become: yes
+   command: apt install libpcre2-8-0 libc-ares2 
+
+ - name: Install FRR
+   become: yes
+   command: dpkg -i /tmp/frr-pythontools.deb /tmp/libyang2.deb /tmp/frr.deb

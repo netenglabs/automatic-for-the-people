@@ -4,14 +4,20 @@ bgp_asn: 65533
 fw_peers:
   - iface: eth1.2
     address: 169.254.254.2/30
+    peer: 169.254.254.1
   - iface: eth1.3
     address: 169.254.254.6/30
+    peer: 169.254.254.5
   - iface: eth1.4
     address: 169.254.254.10/30
+    peer: 169.254.254.9
   - iface: eth2.2
     address: 169.254.253.2/30
+    peer: 169.254.253.1
   - iface: eth2.3
     address: 169.254.253.6/30
+    peer: 169.254.253.5
   - iface: eth2.4
     address: 169.254.253.10/30
+    peer: 169.254.253.9
 

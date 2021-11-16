@@ -16,7 +16,7 @@ router bgp {{ bgp_asn }}
  neighbor fabric remote-as external
  neighbor fabric bfd
  {% for peer in fw_peers %}
- neighbor {{ peer.iface }} interface peer-group fabric
+ neighbor {{ peer.peer }} peer-group fabric
  {% endfor %}
  !
  address-family ipv4 unicast

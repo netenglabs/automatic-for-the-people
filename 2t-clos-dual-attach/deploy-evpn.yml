@@ -89,9 +89,11 @@
 - hosts: firewall
   become: yes
   roles:
-    - install-frr
-    - cfg-fw-interfaces
-    - cfg-fw-frr
+    - role: install-frr
+      tags: fw-install-frr
+    - role: cfg-fw-interfaces
+    - role: cfg-fw-frr
+      tags: fw-frr
   
   handlers:
     - name: ifup interfaces
