@@ -5,11 +5,8 @@
     config: |
       router bgp {{ ibgp_asn }}
          log-neighbor-changes
-         !
-         ! The next two lines needed only for vPC Fabric peering
-         ! address-family l2vpn evpn
-         !  advertise-pip
-         !
+         address-family l2vpn evpn
+           advertise-pip
          template peer VXLAN_SPINE
            remote-as {{ ibgp_asn }}
            update-source loopback0
@@ -50,10 +47,8 @@
   connection: network_cli
   cli_config:
     config: |
-      ip prefix-list ATTACHED_SVIS seq 10 permit 172.16.0.0/16 ge 24
-      !
       route-map ADV_SVIS permit 10
-        match ip address prefix-list ATTACHED_SVIS
+        match tag 12345
 
 - name: Advertise L3 GW address (NXOS)                                                                  
   connection: network_cli                          
