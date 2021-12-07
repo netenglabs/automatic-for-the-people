@@ -7,6 +7,7 @@
         no shutdown
         advertise virtual-rmac
         host-reachability protocol bgp
+        global suppress-arp
         source-interface {{ vtep_iface }}
   when: inventory_hostname not in groups['spine']
   tags: vxlan
@@ -18,13 +19,6 @@
       fabric forwarding anycast-gateway-mac {{ nxos_fabric_anycast_gw_mac }}
   when: inventory_hostname not in groups['spine']
 
-- name: Reconfigure access-list for arp suppression (NXOS)
-  connection: network_cli
-  cli_config:
-    config: |
-      hardware access-list tcam region vpc-convergence 0
-      hardware access-list tcam region arp-ether 256
-
 - name: Configure VNIs with mcast (NXOS)
   connection: network_cli
   cli_config: 
@@ -35,7 +29,6 @@
      interface nve1
        !
        member vni {{ l2_networks[item.vlanid].vnid }}
-         suppress-arp
          mcast-group {{ item.mcast_grp }}
 
   with_items: "{{ l2_ports[ansible_network_os] }}"
@@ -49,10 +42,9 @@
        vn-segment {{ l2_networks[item.vlanid].vnid }}
 
      interface nve1
+       global ingress-replication protocol bvp
        !
        member vni {{ l2_networks[item.vlanid].vnid }}
-         suppress-arp
-         ingress-replication protocol bgp
 
   with_items: "{{ l2_ports[ansible_network_os] }}"
   when: l2_ports is defined and replication != 'mcast'
@@ -86,9 +78,10 @@
     config: |
       int Vlan{{ item.vlanid }}
         vrf member {{ l2_networks[item.vlanid].vrf }}
-        no shut
-        ip address {{ l2_networks[item.vlanid].ip_address }}
+        ip address {{ l2_networks[item.vlanid].ip_address }} tag 12345
+        ! mtu 9000 should not be a must.
         mtu 9000
         fabric forwarding mode anycast-gateway
+        no shut
   with_items: "{{ l2_ports[ansible_network_os] }}"
   when: l2_ports is defined
