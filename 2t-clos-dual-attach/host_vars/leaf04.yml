@@ -8,6 +8,7 @@ mlag_info:
   vpc_domainid: 34
   peer_switch: leaf03
   peerlink_ip: 169.254.1.1/31
+  backup_ip: 10.0.0.13
 
 vtep_ip:
   cumulus:
