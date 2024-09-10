@@ -86,24 +86,10 @@
         name: frr
         state: restarted
 
-- hosts: firewall
+- hosts: servers
   become: yes
   roles:
-    - role: install-frr
-      tags: fw-install-frr
-    - role: cfg-fw-interfaces
-    - role: cfg-fw-frr
-      tags: fw-frr
-  
-  handlers:
-    - name: ifup interfaces
-      become: yes
-      command: ifup -a --force
-    - name: restart FRR
-      become: yes
-      service:
-        name: frr
-        state: restarted
+    - role: cfg-dual-attach-servers
 
 - hosts: dcedge
   gather_facts: false
@@ -124,10 +110,24 @@
         name: frr
         state: restarted
 
-- hosts: servers
+- hosts: firewall
   become: yes
   roles:
-    - role: cfg-dual-attach-servers
+    - role: install-frr
+      tags: fw-install-frr
+    - role: cfg-fw-interfaces
+    - role: cfg-fw-frr
+      tags: fw-frr
+  
+  handlers:
+    - name: ifup interfaces
+      become: yes
+      command: ifup -a --force
+    - name: restart FRR
+      become: yes
+      service:
+        name: frr
+        state: restarted
 
 - hosts: spine:leaf:exit
   gather_facts: false
@@ -136,9 +136,6 @@
       tags: save
     - role: cfg-backup
       tags: backup
-    - role: cfg-reboot
-      tags: reboot
-      when: ansible_network_os == "eos"
   
 
       
