@@ -1,0 +1,65 @@
+---
+message: |
+  Uses routed ports with duplicate IP addresses across VRFs
+
+defaults.device: linux
+
+vrfs:
+ red:
+ blue:
+
+nodes:
+  dup-ip-l1:
+    module: [ vrf, ospf ]
+    device: eos
+  dup-ip-l2:
+    module: [ vrf, ospf ]
+    device: eos
+  dup-ip-s1:
+    module: [ vrf, ospf ]
+    device: csr
+  dup-ip-s2:
+    module: [ vrf, ospf ]
+    device: csr
+  h1:
+  h2:
+  h3:
+  h4:
+
+links:
+- dup-ip-l1: 
+     vrf: red
+     ipv4: 172.16.0.1/24
+  h1:
+     ipv4: 172.16.0.6/24
+- dup-ip-l1: 
+     vrf: blue
+     ipv4: 172.16.0.1/24
+  h2:
+     ipv4: 172.16.0.6/24
+- dup-ip-l2:
+     vrf: red
+     ipv4: 172.16.1.1/24
+  h3:
+     ipv4: 172.16.1.7/24
+- dup-ip-l2: 
+     vrf: blue
+     ipv4: 172.16.1.1/24
+  h4:
+     ipv4: 172.16.1.7/24
+- dup-ip-l1: {vrf: red}
+  dup-ip-s1: {vrf: red}
+- dup-ip-l1: {vrf: blue}
+  dup-ip-s2: {vrf: blue}
+- dup-ip-l2: {vrf: red}
+  dup-ip-s1: {vrf: red}
+- dup-ip-l2: {vrf: blue}
+  dup-ip-s2: {vrf: blue}
+
+validate:
+  ping_h3:
+   nodes: [h1]
+   plugin: ping('h3')
+  ping_h4:
+   nodes: [h2]
+   plugin: ping('h4')
