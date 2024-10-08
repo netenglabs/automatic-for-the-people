@@ -1,0 +1,18 @@
+
+---
+sources:
+  - name: dia
+    hosts:
+      - url: ssh://vagrant@192.168.121.101 password=vagrant
+      - url: ssh://vagrant@192.168.121.102 password=vagrant
+      - url: ssh://vagrant@192.168.121.103 password=vagrant
+      - url: ssh://vagrant@192.168.121.104 password=vagrant
+
+devices:
+  - name: default
+    ignore-known-hosts: true
+
+namespaces:
+  - name: dup-ip
+    source: dia
+    device: default
