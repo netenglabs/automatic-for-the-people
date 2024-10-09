@@ -9,16 +9,16 @@ vrfs:
  blue:
 
 nodes:
-  dup-ip-l1:
+  dupip_l1:
     module: [ vrf, ospf ]
     device: eos
-  dup-ip-l2:
+  dupip_l2:
     module: [ vrf, ospf ]
     device: eos
-  dup-ip-s1:
+  dupip_s1:
     module: [ vrf, ospf ]
     device: csr
-  dup-ip-s2:
+  dupip_s2:
     module: [ vrf, ospf ]
     device: csr
   h1:
@@ -27,34 +27,34 @@ nodes:
   h4:
 
 links:
-- dup-ip-l1: 
+- dupip_l1: 
      vrf: red
      ipv4: 172.16.0.1/24
   h1:
      ipv4: 172.16.0.6/24
-- dup-ip-l1: 
+- dupip_l1: 
      vrf: blue
      ipv4: 172.16.0.1/24
   h2:
      ipv4: 172.16.0.6/24
-- dup-ip-l2:
+- dupip_l2:
      vrf: red
      ipv4: 172.16.1.1/24
   h3:
      ipv4: 172.16.1.7/24
-- dup-ip-l2: 
+- dupip_l2: 
      vrf: blue
      ipv4: 172.16.1.1/24
   h4:
      ipv4: 172.16.1.7/24
-- dup-ip-l1: {vrf: red}
-  dup-ip-s1: {vrf: red}
-- dup-ip-l1: {vrf: blue}
-  dup-ip-s2: {vrf: blue}
-- dup-ip-l2: {vrf: red}
-  dup-ip-s1: {vrf: red}
-- dup-ip-l2: {vrf: blue}
-  dup-ip-s2: {vrf: blue}
+- dupip_l1: {vrf: red}
+  dupip_s1: {vrf: red}
+- dupip_l1: {vrf: blue}
+  dupip_s2: {vrf: blue}
+- dupip_l2: {vrf: red}
+  dupip_s1: {vrf: red}
+- dupip_l2: {vrf: blue}
+  dupip_s2: {vrf: blue}
 
 validate:
   ping_h3:
