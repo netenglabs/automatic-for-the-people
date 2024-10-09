@@ -27,8 +27,8 @@
       iface {{ mlag.peerlink[ansible_network_os]}}.{{mlag.peerlink_vlan[ansible_network_os] }}
          clagd-peer-ip linklocal
          clagd-sys-mac {{ mlag_info.clag_sysid }}
-         {% if mlag.backup_ip is defined %}
-         clagd-backup-ip {{ mlag.backup_ip }}
+         {% if mlag_info.backup_ip is defined %}
+         clagd-backup-ip {{ mlag_info.backup_ip }}
          {% else %}
          clagd-backup-ip false
          {% endif %}

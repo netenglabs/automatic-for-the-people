@@ -22,7 +22,7 @@
       auto bridge
       iface bridge
         bridge-vlan-aware yes
-        bridge-ports  {{ l2_ifs }} {{ l2vni_ifs }} {{ l3vni_ifs }}
+        bridge-ports  {{ l2_ifs }} {{ l2vni_ifs }} {{ l3vni_ifs }} peerlink
         bridge-vids {{ vid_list | join(' ') }} {{ l3_vni_vid_list | join(' ') }}
     marker: '# {mark} bridge'
   notify:
