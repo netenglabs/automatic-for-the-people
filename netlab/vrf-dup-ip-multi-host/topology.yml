@@ -1,0 +1,96 @@
+---
+message: |
+  Uses SVIs with duplicate IP addresses across VRFs
+
+defaults.device: linux
+
+vrfs:
+ red:
+ blue:
+
+vlans:
+  red:
+    role: bridge
+    vrf: red
+  blue:
+    role: bridge
+    vrf: blue
+
+groups:
+  hosts:
+    members: [h1, h2, h3, h4]
+    config: [ linux-lldp-install.j2 ]
+
+  leafs:
+    members: [ dup-ip-svi-l1, dup-ip-svi-l2, dup-ip-svi-l3, dup-ip-svi-l4 ]
+    config: [ eos-no-stp.j2, eos-add-defrt-mgmt.j2 ]
+      
+nodes:
+  dup-ip-svi-l1:
+    module: [ vlan, vrf, ospf ]
+    device: eos
+  dup-ip-svi-l2:
+    module: [ vlan, vrf, ospf ]
+    device: eos
+  dup-ip-svi-l3:
+    module: [ vlan, vrf, ospf ]
+    device: eos
+  dup-ip-svi-l4:
+    module: [ vlan, vrf, ospf ]
+    device: eos
+  dup-ip-svi-s1:
+    module: [ vrf, ospf ]
+    device: csr
+  dup-ip-svi-s2:
+    module: [ vrf, ospf ]
+    device: csr
+  h1:
+  h2:
+  h3:
+  h4:
+
+links:
+- dup-ip-svi-l1: 
+     ipv4: 172.16.0.1/24
+     vlan.access: red
+  h1:
+     ipv4: 172.16.0.6/24
+- dup-ip-svi-l2: 
+     vlan.access: blue
+     ipv4: 172.16.0.1/24
+  h2:
+     ipv4: 172.16.0.6/24
+- dup-ip-svi-l3:
+     vlan.access: red
+     ipv4: 172.16.1.1/24
+  h3:
+     ipv4: 172.16.1.7/24
+- dup-ip-svi-l4: 
+     vlan.access: blue
+     ipv4: 172.16.1.1/24
+  h4:
+     ipv4: 172.16.1.7/24
+- dup-ip-svi-l1: {vrf: red}
+  dup-ip-svi-s1: {vrf: red}
+- dup-ip-svi-l1: {vrf: red}
+  dup-ip-svi-s2: {vrf: red}
+- dup-ip-svi-l2: {vrf: blue}
+  dup-ip-svi-s1: {vrf: blue}
+- dup-ip-svi-l2: {vrf: blue}
+  dup-ip-svi-s2: {vrf: blue}
+- dup-ip-svi-l3: {vrf: red}
+  dup-ip-svi-s1: {vrf: red}
+- dup-ip-svi-l3: {vrf: red}
+  dup-ip-svi-s2: {vrf: red}
+- dup-ip-svi-l4: {vrf: blue}
+  dup-ip-svi-s1: {vrf: blue}
+- dup-ip-svi-l4: {vrf: blue}
+  dup-ip-svi-s2: {vrf: blue}
+
+validate:
+  ping_h3:
+   nodes: [h1]
+   plugin: ping('h3')
+  ping_h4:
+   nodes: [h2]
+   plugin: ping('h4')
