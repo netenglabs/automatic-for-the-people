@@ -1,0 +1,11 @@
+---
+- hosts: h1:h2:h8
+  tasks:
+    - command: ping -c 1 h1
+    - command: ping -c 1 h2
+    - command: ping -c 1 h3
+    - command: ping -c 1 h4
+    - command: ping -c 1 h5
+    - command: ping -c 1 h6
+    - command: ping -c 1 h7
+    - command: ping -c 1 h8

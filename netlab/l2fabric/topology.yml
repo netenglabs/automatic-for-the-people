@@ -1,0 +1,164 @@
+defaults.device: eos
+
+gateway.protocol: vrrp
+
+nodes:
+  l1:
+    module: [vlan, stp]
+  l2:
+    module: [vlan, stp]
+  l3:
+    module: [vlan, stp]
+  l4:
+    module: [vlan, stp]
+  l5:
+    module: [vlan, stp]
+  l6:
+    module: [vlan, stp]
+  s1:
+    module: [vlan, stp, gateway]
+    vlans:
+      blue:
+        ipv4: 172.16.1.1/24
+        stp.priority: 4096
+        vlan.mode: route
+        gateway: true
+      red:
+        ipv4: 172.16.2.2/24
+        stp.priority: 8192
+        vlan.mode: route
+        gateway: true
+      green:
+        ipv4: 172.16.3.2/24
+        stp.priority: 8192
+        vlan.mode: route
+        gateway: true
+      cyan:
+        ipv4: 172.16.4.1/24
+        stp.priority: 4096
+        vlan.mode: route
+        gateway: true
+  s2:
+    module: [vlan, stp, gateway]
+    vlans:
+      blue:
+        ipv4: 172.16.1.2/24
+        stp.priority: 8192
+        vlan.mode: route
+        gateway: true
+      red:
+        ipv4: 172.16.2.1/24
+        stp.priority: 4096
+        vlan.mode: route
+        gateway: true
+      green:
+        ipv4: 172.16.3.1/24
+        stp.priority: 4096
+        vlan.mode: route
+        gateway: true
+      cyan:
+        ipv4: 172.16.4.2/24
+        stp.priority: 8192
+        vlan.mode: route
+        gateway: true
+
+  h1:
+  h2:
+  h3:
+  h4:
+  h5:
+  h6:
+  h7:
+  h8:
+
+groups:
+  hosts:
+    members: [ h1, h2, h3, h4, h5, h6, h7, h8, h9, h10 ]
+    device: linux
+
+vlans:
+  blue:
+    id: 100
+    mode: bridge
+    prefix: 172.16.1.0/24
+  red:
+    id: 200
+    mode: bridge
+    prefix: 172.16.2.0/24
+  green:
+    id: 201
+    mode: bridge
+    prefix: 172.16.3.0/24
+  cyan:
+    id: 300
+    mode: bridge
+    prefix: 172.16.4.0/24
+
+stp:
+  protocol: pvrst
+
+links:
+- l1:
+  s1:
+  vlan.trunk: [blue, red, green, cyan]
+- l1:
+  s2:
+  vlan.trunk: [blue, red, green, cyan]
+- l2:
+  s1:
+  vlan.trunk: [blue, red, green, cyan]
+- l2:
+  s2:
+  vlan.trunk: [blue, red, green, cyan]
+- l3:
+  s1:
+  vlan.trunk: [blue, red, green, cyan]
+- l3:
+  s2:
+  vlan.trunk: [blue, red, green, cyan]
+- l4:
+  s1:
+  vlan.trunk: [blue, red, green, cyan]
+- l4:
+  s2:
+  vlan.trunk: [blue, red, green, cyan]
+- l5:
+  s1:
+  vlan.trunk: [blue, red, green, cyan]
+- l5:
+  s2:
+  vlan.trunk: [blue, red, green, cyan]
+- l6:
+  s2:
+  vlan.trunk: [blue, red, green, cyan]
+- l6:
+  s1:
+  vlan.trunk: [blue, red, green, cyan]
+- s1:
+  s2:
+  vlan.trunk: [blue, red, green, cyan]
+- l1:
+  h1:
+  vlan.access: blue
+- l1:
+  h3:
+  vlan.access: red
+- l2:
+  h4:
+  vlan.access: red
+- l3:
+  h5:
+  vlan.access: green
+- l3:
+  h6:
+  vlan.access: green
+- l4:
+  h7:
+  vlan.access: cyan
+- l5:
+  h8:
+  vlan.access: cyan
+- l6:
+  h2:
+  vlan.access: blue
+
