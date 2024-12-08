@@ -12,9 +12,9 @@ nodes:
   sf-l2:
     module: [vlan, stp]
   sf-l3:
-    module: [vlan, stp]
+    module: [vlan]
   sf-l4:
-    module: [vlan, stp]
+    module: [vlan]
   sf-s1:
     module: [vlan, stp, gateway, ospf]
     vlans:
@@ -46,7 +46,7 @@ nodes:
         gateway:
           vrrp.priority: 200
   sf-s3:
-    module: [vlan, stp, gateway, ospf]
+    module: [vlan, gateway, ospf]
     vlans:
       green:
         ipv4: 172.16.3.1/24
@@ -62,7 +62,7 @@ nodes:
           vrrp.priority: 100          
 
   sf-s4:
-    module: [vlan, stp, gateway, ospf]
+    module: [vlan, gateway, ospf]
     vlans:
       green:
         ipv4: 172.16.3.2/24
@@ -94,20 +94,26 @@ groups:
     members: [ sf-h1, sf-h2, sf-h3, sf-h4, sf-h5, sf-h6 ]
     device: linux
 
-  c1-l2--switches:
+  c1-acc-switches:
     members: [ sf-l1, sf-l2 ]
     device: eos
-    config: [ eos-add-defrt-mgmt.j2 ]
+    config: [ acc-custom ]
 
-  c2-l2-switches:
+  c1-agg-switches:
+    members: [ sf-s1, sf-s2 ]
+    device: eos
+    config: [ agg-custom ]
+
+  c2-acc-switches:
     members: [ sf-l3, sf-l4 ]
-    device: eos
+    device: nxos
+    config: [ acc-custom ]
 
-  agg-switches:
-    device: eos
-    members: [ sf-s1, sf-s2, sf-s3, sf-s4 ]
+  c2-agg-switches:
+    members: [ sf-s3, sf-s4 ]
+    device: nxos
 
-  iosxe-switches:
+  core-switches:
     members: [ sf-s5, sf-s6 ]
     device: csr
 
@@ -136,27 +142,35 @@ links:
 - sf-l1:
   sf-s1:
   vlan.trunk: [blue, red ]
+  prefix: False
 - sf-l1:
   sf-s2:
   vlan.trunk: [blue, red ]
+  prefix: False
 - sf-l2:
   sf-s1:
   vlan.trunk: [blue, red ]
+  prefix: False
 - sf-l2:
   sf-s2:
   vlan.trunk: [blue, red ]
+  prefix: False
 - sf-l3:
   sf-s3:
   vlan.trunk: [ green, cyan]
+  prefix: False
 - sf-l3:
   sf-s4:
   vlan.trunk: [ green, cyan]
+  prefix: False
 - sf-l4:
   sf-s3:
   vlan.trunk: [ green, cyan]
+  prefix: False
 - sf-l4:
   sf-s4:
   vlan.trunk: [ green, cyan]
+  prefix: False
 - sf-s1:
   sf-s5:
 - sf-s1:
@@ -176,26 +190,32 @@ links:
 - sf-l1:
   sf-h1:
   vlan.access: blue
+  prefix: False
 - sf-l1:
   sf-h2:
   vlan.access: red
+  prefix: False
 - sf-l2:
   sf-h3:
   vlan.access: blue
+  prefix: False
 - sf-l3:
   sf-h4:
   vlan.access: green
+  prefix: False
 - sf-l3:
   sf-h5:
   vlan.access: cyan
+  prefix: False
 - sf-l4:
   sf-h6:
   vlan.access: cyan
+  prefix: False
 
 validate:
   ping_from_h1:
     nodes: [sf-h1]
-#    plugin: ping(['sf-h2', 'sf-h3','sf-h4', 'sf-h5', 'sf-h6'])
+    plugin: ping('sf-h2 sf-h3 sf-h4 sf-h5 sf-h6')
 #    plugin: ping('sf-h2'])
   ping_from_h3:
     nodes: [sf-h3]
