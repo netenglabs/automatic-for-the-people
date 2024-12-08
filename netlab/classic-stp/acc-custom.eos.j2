@@ -2,7 +2,7 @@
 interface Ethernet3-4
    spanning-tree portfast edge
 {% elif inventory_hostname == "sf-l2" %}
-interface Ethernet3-4
+interface Ethernet3
    spanning-tree bpduguard disable
    spanning-tree portfast edge
 {% endif %}
