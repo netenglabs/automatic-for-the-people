@@ -1,4 +1,4 @@
-defaults.device: eos
+# Classic Access-Agg architecture without mlag
 
 gateway.protocol: vrrp
 
@@ -22,22 +22,26 @@ nodes:
         ipv4: 172.16.1.1/24
         stp.priority: 4096
         vlan.mode: route
-        gateway: true
+        gateway:
+          vrrp.priority: 100
       red:
         ipv4: 172.16.2.2/24
         stp.priority: 8192
         vlan.mode: route
-        gateway: true
+        gateway:
+          vrrp.priority: 200
       green:
         ipv4: 172.16.3.2/24
         stp.priority: 8192
         vlan.mode: route
-        gateway: true
+        gateway: 
+          vrrp.priority: 200
       cyan:
         ipv4: 172.16.4.1/24
         stp.priority: 4096
         vlan.mode: route
-        gateway: true
+        gateway: 
+          vrrp.priority: 100
   s2:
     module: [vlan, stp, gateway]
     vlans:
@@ -45,22 +49,26 @@ nodes:
         ipv4: 172.16.1.2/24
         stp.priority: 8192
         vlan.mode: route
-        gateway: true
+        gateway:
+          vrrp.priority: 200          
       red:
         ipv4: 172.16.2.1/24
         stp.priority: 4096
         vlan.mode: route
-        gateway: true
+        gateway:
+          vrrp.priority: 100          
       green:
         ipv4: 172.16.3.1/24
         stp.priority: 4096
         vlan.mode: route
-        gateway: true
+        gateway:
+          vrrp.priority: 100          
       cyan:
         ipv4: 172.16.4.2/24
         stp.priority: 8192
         vlan.mode: route
-        gateway: true
+        gateway:
+          vrrp.priority: 200          
 
   h1:
   h2:
@@ -73,8 +81,13 @@ nodes:
 
 groups:
   hosts:
-    members: [ h1, h2, h3, h4, h5, h6, h7, h8, h9, h10 ]
+    members: [ h1, h2, h3, h4, h5, h6, h7, h8 ]
     device: linux
+
+  switches:
+    members: [ s1, s2, l1, l2, l3, l4, l5, l6]
+    device: eos
+    config: [ eos-add-defrt-mgmt.j2 ]
 
 vlans:
   blue:
@@ -161,4 +174,12 @@ links:
 - l6:
   h2:
   vlan.access: blue
+
+validate:
+  ping_from_h1:
+    nodes: [h1]
+    plugin: ping(['h2', 'h3','h4', 'h5', 'h6', 'h7', 'h8'])
+  ping_from_h7:
+    nodes: [h1]
+    plugin: ping(['h2', 'h3','h4', 'h5', 'h6', 'h1', 'h8'])
 
