@@ -1,0 +1,62 @@
+message: |
+  The lab contains a PE-router with three CE-routers attached to it. The
+  PE-router implements a hub-and-spoke VRF with HUB_EGRESS and HUB_INGRESS
+  VRFs
+
+plugin: [ multilab, bgp.session ]
+defaults.multilab.id: 14
+
+defaults.device: csr
+#provider: clab
+
+
+module: [ vrf, bgp ]
+groups:
+  ce-eos:
+    device: eos
+    members: [ plano-ce-s1 ]
+    config: [eos-add-defrt-mgmt.j2]
+
+  ce-cls:
+    device: cumulus
+    members: [ plano-ce-s2 ]
+
+  ce-nxos:
+    device: nxos
+    members: [ plano-ce-hub ]
+
+vrfs:
+  s_1:
+    export: [ hub_egress ]
+    import: [ hub_ingress ]
+  s_2:
+    export: [ hub_egress ]
+    import: [ hub_ingress ]
+  hub_ingress:
+  hub_egress:
+
+nodes:
+  plano-pe:
+    module: [ bgp, vrf ]
+    bgp.as: 65000
+  plano-ce-hub:
+    bgp.as: 65100
+  plano-ce-s1:
+    bgp.as: 65101
+  plano-ce-s2:
+    bgp.as: 65102
+
+links:
+- plano-pe:
+  plano-ce-s1:
+    vrf: s_1
+- plano-pe:
+  plano-ce-s2:
+    vrf: s_2
+- plano-pe:
+  plano-ce-hub:
+    vrf: hub_ingress
+    bgp.as_override: True
+- plano-pe:
+  plano-ce-hub:
+    vrf: hub_egress
