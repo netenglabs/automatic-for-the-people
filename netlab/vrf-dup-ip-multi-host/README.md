@@ -1,4 +1,8 @@
-This topology tests duplicate IPs across VRFs with hosts spread across multiple hosts with
-multipathing between source and dest. It also enables lldp on hosts.
+This topology:
+*  tests duplicate IPs across VRFs with hosts spread across multiple
+   hosts with multipathing between source and dest. 
+* does route leaking betweeen green and red VRFs.
+* enables lldp on hosts.
 
-Copy the .j2 files into ~/.netlab before doing `netlab up`. You also need to fix the eos-add-defrt-mgmt to ensure the addresses match what's specific to your laptop if suzieq is running on a different machine than where netlab is running.
+You need to run ansible-playbook cls-enable-netd.yml to ensure that
+vagrant user has access to all the commands
