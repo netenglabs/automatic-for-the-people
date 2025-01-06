@@ -2,11 +2,14 @@
 message: |
   Uses SVIs with duplicate IP addresses across VRFs
 
+plugin: [ multilab ]
+defaults.multilab.id: 16
 defaults.device: linux
 
 vrfs:
  red:
  blue:
+ green:
 
 vlans:
   red:
@@ -15,77 +18,145 @@ vlans:
   blue:
     role: bridge
     vrf: blue
+  green:
+    role: bridge
+    vrf: green
+
+bgp:
+  activate:
+    ipv4:
+      - ebgp
 
 groups:
-  hosts:
-    members: [h1, h2, h3, h4]
-    config: [ linux-lldp-install.j2 ]
+  lldp-hosts:
+    members: [h1, h3]
+    config: [linux-lldp-install.j2]
+  non-lldp-hosts:
+    members: [h2, h4, h5]
 
   leafs:
-    members: [ dup-ip-svi-l1, dup-ip-svi-l2, dup-ip-svi-l3, dup-ip-svi-l4 ]
+    members: [ sd-l1, sd-l2, sd-l3, sd-l4]
     config: [ eos-no-stp.j2, eos-add-defrt-mgmt.j2 ]
       
 nodes:
-  dup-ip-svi-l1:
-    module: [ vlan, vrf, ospf ]
+  sd-l1:
+    module: [ vlan, vrf, bgp ]
     device: eos
-  dup-ip-svi-l2:
-    module: [ vlan, vrf, ospf ]
+    vlans:
+      red:
+        ipv4: 172.16.0.1/24
+    bgp:
+      as: 65001
+      originate: [172.16.0.0/24]
+  sd-l2:
+    module: [ vlan, vrf, bgp ]
     device: eos
-  dup-ip-svi-l3:
-    module: [ vlan, vrf, ospf ]
+    vlans:
+      blue:
+        ipv4: 172.16.0.1/24
+    bgp:
+      as: 65002
+      originate: [172.16.0.0/24]
+  sd-l3:
+    module: [ vlan, vrf, bgp ]
     device: eos
-  dup-ip-svi-l4:
-    module: [ vlan, vrf, ospf ]
+    vlans:
+      red:
+        ipv4: 172.16.1.1/24
+    bgp:
+      as: 65003
+      originate: [172.16.1.0/24]
+  sd-l4:
+    module: [ vlan, vrf, bgp ]
     device: eos
-  dup-ip-svi-s1:
-    module: [ vrf, ospf ]
+    vlans:
+      blue:
+        ipv4: 172.16.1.1/24
+    bgp:
+      as: 65004
+      originate: [172.16.1.0/24]
+  sd-l5:
+    module: [ vlan, vrf, bgp ]
+    device: cumulus
+    vlans:
+      green:
+        ipv4: 172.16.2.1/24
+    bgp:
+      as: 65105
+      originate: [172.16.2.0/24]
+  sd-s1:
+    module: [ vrf, bgp ]
     device: csr
-  dup-ip-svi-s2:
-    module: [ vrf, ospf ]
-    device: csr
+    vrfs:
+      red:
+        import: [red, green]
+        export: [red]
+      green:
+        import: [red, green]
+        export: [green]
+      blue:
+    bgp:
+      as: 65101
+  sd-s2:
+    module: [ vrf, bgp ]
+    device: cumulus
+    vrfs:
+      red:
+        import: [red, green]
+        export: [red]
+      green:
+        import: [red, green]
+        export: [green]
+      blue:
+    bgp:
+      as: 65102
   h1:
   h2:
   h3:
   h4:
+  h5:
 
 links:
-- dup-ip-svi-l1: 
-     ipv4: 172.16.0.1/24
+- sd-l1: 
      vlan.access: red
   h1:
      ipv4: 172.16.0.6/24
-- dup-ip-svi-l2: 
+- sd-l2: 
      vlan.access: blue
-     ipv4: 172.16.0.1/24
   h2:
      ipv4: 172.16.0.6/24
-- dup-ip-svi-l3:
+- sd-l3:
      vlan.access: red
-     ipv4: 172.16.1.1/24
   h3:
      ipv4: 172.16.1.7/24
-- dup-ip-svi-l4: 
+- sd-l4: 
      vlan.access: blue
-     ipv4: 172.16.1.1/24
   h4:
      ipv4: 172.16.1.7/24
-- dup-ip-svi-l1: {vrf: red}
-  dup-ip-svi-s1: {vrf: red}
-- dup-ip-svi-l1: {vrf: red}
-  dup-ip-svi-s2: {vrf: red}
-- dup-ip-svi-l2: {vrf: blue}
-  dup-ip-svi-s1: {vrf: blue}
-- dup-ip-svi-l2: {vrf: blue}
-  dup-ip-svi-s2: {vrf: blue}
-- dup-ip-svi-l3: {vrf: red}
-  dup-ip-svi-s1: {vrf: red}
-- dup-ip-svi-l3: {vrf: red}
-  dup-ip-svi-s2: {vrf: red}
-- dup-ip-svi-l4: {vrf: blue}
-  dup-ip-svi-s1: {vrf: blue}
-- dup-ip-svi-l4: {vrf: blue}
-  dup-ip-svi-s2: {vrf: blue}
+- sd-l5: 
+     vlan.access: green
+  h5:
+     ipv4: 172.16.2.7/24
+- sd-l1: {vrf: red}
+  sd-s1: {vrf: red}
+- sd-l1: {vrf: red}
+  sd-s2: {vrf: red}
+- sd-l2: {vrf: blue}
+  sd-s1: {vrf: blue}
+- sd-l2: {vrf: blue}
+  sd-s2: {vrf: blue}
+- sd-l3: {vrf: red}
+  sd-s1: {vrf: red}
+- sd-l3: {vrf: red}
+  sd-s2: {vrf: red}
+- sd-l4: {vrf: blue}
+  sd-s1: {vrf: blue}
+- sd-l4: {vrf: blue}
+  sd-s2: {vrf: blue}
+- sd-l5: {vrf: green}
+  sd-s1: {vrf: green}
+- sd-l5: {vrf: green}
+  sd-s2: {vrf: green}
 
 validate:
   ping_h3:
@@ -94,3 +165,9 @@ validate:
   ping_h4:
    nodes: [h2]
    plugin: ping('h4')
+  ping_h5:
+   nodes: [h1]
+   plugin: ping('h5')
+  ping_h5-h3:
+   nodes: [h3]
+   plugin: ping('h5')
