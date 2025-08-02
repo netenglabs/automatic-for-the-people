@@ -1,0 +1,168 @@
+---
+message: |
+  Multi-area OSPF
+
+plugin: [ multilab ]
+defaults.multilab.id: 14
+
+defaults.device: linux
+
+vlans:
+  red:
+    role: route
+    ospf:
+      area: 0.0.0.1
+  blue:
+    role: route
+    ospf:
+      area: 0.0.0.2
+  green:
+    role: route
+    ospf:
+      area: 0.0.0.3
+
+groups:
+  lldp-hosts:
+    members: [sjc-h1, sjc-h3, sjc-h5]
+    config: [ linux-lldp-install.j2 ]
+
+  non-lldp-hosts:
+    members: [sjc-h2, sjc-h4, sjc-h6]
+
+  eos-nodes:
+    members: [ sjc-l1, sjc-s4 ]
+    config: [ eos-dns-time-cfg.j2 ]
+      
+  nxos-nodes:
+    members: [ sjc-l3, sjc-s3, sjc-s5 ]
+    config: [ nxos-dns-time-cfg.j2 ]
+
+  csr-nodes:
+    members: [ sjc-s1 ]
+    config: [ ios-dns-time-cfg.j2 ]
+
+  cumulus-nodes:
+    members: [ sjc-s2, sjc-l2 ]
+    config: [ cls-enable-netd.j2 ]
+
+nodes:
+  sjc-l1:
+    module: [ vlan, ospf, bfd ]
+    device: eos
+    vlans:
+      red:
+
+  sjc-l2:
+    module: [ vlan, ospf, bfd ]
+    device: cumulus
+    vlans:
+      blue:
+
+  sjc-l3:
+    module: [ vlan, ospf, bfd ]
+    device: nxos
+    vlans:
+      green:
+
+  sjc-s1:
+    module: [ vlan, ospf, bfd ]
+    device: csr
+
+  sjc-s2:
+    module: [ vlan, ospf, bfd ]
+    device: cumulus
+
+  sjc-s3:
+    module: [ vlan, ospf, bfd ]
+    device: nxos
+
+  sjc-s4:
+    module: [ vlan, ospf, bfd ]
+    device: eos
+
+  sjc-s5:
+    module: [ vlan, ospf, bfd ]
+    device: nxos
+
+  sjc-h1:
+  sjc-h2:
+  sjc-h3:
+  sjc-h4:
+  sjc-h5:
+  sjc-h6:
+
+links:
+- sjc-s1: 
+  sjc-s4: 
+  ospf:
+    area: 0.0.0.0
+- sjc-s1: 
+  sjc-s5: 
+  ospf:
+    area: 0.0.0.0
+- sjc-s2: 
+  sjc-s4: 
+  ospf:
+    area: 0.0.0.0
+- sjc-s2: 
+  sjc-s5: 
+  ospf:
+    area: 0.0.0.0
+- sjc-s3: 
+  sjc-s4: 
+  ospf:
+    area: 0.0.0.0
+- sjc-s3: 
+  sjc-s5: 
+  ospf:
+    area: 0.0.0.0
+- sjc-s1:
+  sjc-l1:
+  ospf:
+    area: 0.0.0.1
+- sjc-s2:
+  sjc-l1:
+  ospf:
+    area: 0.0.0.1
+- sjc-s1:
+  sjc-l2:
+  ospf:
+    area: 0.0.0.2
+- sjc-s2:
+  sjc-l2:
+  ospf:
+    area: 0.0.0.2
+- sjc-s3:
+  sjc-l3:
+  ospf:
+    area: 0.0.0.3
+- sjc-l1: 
+     vlan.access: red
+  sjc-h1:
+- sjc-l1: 
+     vlan.access: red
+  sjc-h2:
+- sjc-l2: 
+     vlan.access: blue
+  sjc-h3:
+- sjc-l2: 
+     vlan.access: blue
+  sjc-h4:
+- sjc-l3:
+     vlan.access: green
+  sjc-h5:
+- sjc-l3:
+     vlan.access: green
+  sjc-h6:
+
+validate:
+  ping_sjc-h3:
+   nodes: [sjc-h1]
+   plugin: ping('sjc-h3')
+  ping_sjc-h4:
+   nodes: [sjc-h2]
+   plugin: ping('sjc-h4')
+  ping_sjc-h6:
+    nodes: [sjc-h5]
+    plugin: 
+      ping('sjc-h6')

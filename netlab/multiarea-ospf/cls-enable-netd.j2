@@ -1,0 +1,14 @@
+---
+- hosts: sjc-l2:sjc-s2
+  tasks:
+    - name: Add vagrant as a user to run net commands
+      become: yes
+      lineinfile:
+        path: /etc/netd.conf
+        regexp: '^users_with_show = root, cumulus'
+        line: users_with_show = root, cumulus, vagrant
+
+    - name: Restart netd
+      become: yes  
+      service: name=netd state=restarted
+  
