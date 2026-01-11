@@ -1,7 +1,8 @@
-
+---
 defaults.device: eos
 provider: libvirt
-plugin: [ fabric ]
+plugin: [ fabric, multilab ]
+defaults.multilab.id: 31
 bgp:
   as: 65000
   #bgp.activate.ipv4: [ ebgp ]                     # Activate IPv4 only on EBGP sessions
@@ -24,18 +25,27 @@ addressing:
 groups:
   _auto_create: True
   leafs:
-    members: [ leaf1, leaf2, leaf3, leaf4 ]
-    module: [ bgp, vlan, vxlan, evpn, vrf, gateway ]
+    members: [ roma-leaf01, roma-leaf02, roma-leaf03, roma-leaf04 ]
+    module: [ bgp, vlan, vxlan, evpn, vrf, lag, gateway ]
     config: [ eos-activate-evpn.j2 ]
     
   spines:
-    members: [ spine1, spine2 ]
+    members: [ roma-spine01, roma-spine02 ]
     module: [ bgp, evpn ]
     bgp.rr: True
     config: [ eos-activate-evpn.j2 ]
 
+  exits:
+    members: [ roma-exit01, roma-exit02 ]
+    module: [ bgp, vxlan, vlan, vrf, evpn ]
+    config: [ eos-activate-evpn.j2 ]
+    vrfs:
+      tenant:
+        loopback: true
+    
   hosts:
-    members: [ srv01, srv02, srv03, srv04 ]
+    members: [ srv101, srv102, srv201, srv202 ]
+    module: [ lag ]
     device: linux
 
 vlan.mode: irb                                   # Enable routing between VLANs
@@ -45,57 +55,149 @@ vrfs:
     id: 50000
     evpn:
       transit_vni: 50000
-
+    bgp: False
+  
 vlans:
   red:
     vrf: tenant                                  # Assign to VRF
     prefix.ipv4: 172.16.10.0/24                   # IPv4 subnet
     prefix.ipv6: 2001:db8:10::/64
     gateway: true                                # Enable gateway on this VLAN
-    links: [ srv01-leaf1 ]
+
   blue:
     vrf: tenant                                  # Assign to VRF
     prefix.ipv4: 172.16.20.0/24                   # IPv4 subnet
     prefix.ipv6: 2001:db8:20::/64
     gateway: true                                # Enable gateway on this VLAN
-    links: [ srv02-leaf2 ]
+
   cyan:
     vrf: tenant                                  # Assign to VRF
     prefix.ipv4: 172.16.30.0/24                   # IPv4 subnet
     prefix.ipv6: 2001:db8:30::/64
     gateway: true                                # Enable gateway on this VLAN
-    links: [ srv03-leaf3, srv04-leaf4 ]
 
 links:
-- leaf1:
+
+# Loopbacks for VTEP for leaves and exits
+- roma-leaf01:
+    type: loopback
+    ipv6: 2001:db8:2::12/128
+    vxlan.vtep: true
+- roma-leaf02:
+    type: loopback
+    ipv6: 2001:db8:2::12/128
+    vxlan.vtep: true
+- roma-leaf03:
+    type: loopback
+    ipv6: 2001:db8:2::34/128
+    vxlan.vtep: true
+- roma-leaf04:
+    type: loopback
+    ipv6: 2001:db8:2::34/128
+    vxlan.vtep: true
+    
+- roma-exit01:
+    type: loopback
+    ipv6: 2001:db8:2::101/128
+    vxlan.vtep: true
+    
+- roma-exit02:
+    type: loopback
+    ipv6: 2001:db8:2::101/128
+    vxlan.vtep: true
+
+# Fabric Links, with as
+- roma-leaf01:
     bgp.local_as: 65101
-  spine1:
+  roma-spine01:
     bgp.local_as: 65200
-- leaf1:
+- roma-leaf01:
     bgp.local_as: 65101
-  spine2:
+  roma-spine02:
     bgp.local_as: 65200
-- leaf2:
+- roma-leaf02:
     bgp.local_as: 65102
-  spine1:
+  roma-spine01:
     bgp.local_as: 65200
-- leaf2:
+- roma-leaf02:
     bgp.local_as: 65102
-  spine2:
+  roma-spine02:
     bgp.local_as: 65200
-- leaf3:
+- roma-leaf03:
     bgp.local_as: 65103
-  spine1:
+  roma-spine01:
     bgp.local_as: 65200
-- leaf3:
+- roma-leaf03:
     bgp.local_as: 65103
-  spine2:
+  roma-spine02:
     bgp.local_as: 65200
-- leaf4:
+- roma-leaf04:
     bgp.local_as: 65104
-  spine1:
+  roma-spine01:
     bgp.local_as: 65200
-- leaf4:
+- roma-leaf04:
     bgp.local_as: 65104
-  spine2:
+  roma-spine02:
     bgp.local_as: 65200
+- roma-exit01:
+    bgp.local_as: 65111
+  roma-spine01:
+    bgp.local_as: 65200
+- roma-exit01:
+    bgp.local_as: 65111
+  roma-spine02:
+    bgp.local_as: 65200
+- roma-exit02:
+    bgp.local_as: 65112
+  roma-spine01:
+    bgp.local_as: 65200
+- roma-exit02:
+    bgp.local_as: 65112
+  roma-spine02:
+    bgp.local_as: 65200
+
+# MLAG peerlinks
+- lag:
+    members:
+      - roma-leaf01: { ifname: eth3 }
+        roma-leaf02: { ifname: eth3 }
+    mlag.peergroup: true
+
+- lag:
+    members:
+      - roma-leaf03: { ifname: eth3 }
+        roma-leaf04: { ifname: eth3 }
+    mlag.peergroup: true
+
+- vlan: { access: red }
+  lag:
+    members:
+      - srv101: {}
+        roma-leaf01: {}
+      - srv101: {}
+        roma-leaf02: {}
+
+- vlan: { access: blue }
+  lag:
+    members:
+      - srv201: {}
+        roma-leaf03: {}
+      - srv201: {}
+        roma-leaf04: {}
+- vlan: { access: cyan }
+  lag:
+    members:
+      - srv102: {}
+        roma-leaf01: {}
+      - srv102: {}
+        roma-leaf02: {}
+- vlan: { access: cyan }
+  lag:
+    members:
+      - srv202: {}
+        roma-leaf03: {}
+      - srv202: {}
+        roma-leaf04: {}
+
+    
+ 
