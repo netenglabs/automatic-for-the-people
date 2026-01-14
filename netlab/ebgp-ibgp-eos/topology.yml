@@ -38,10 +38,16 @@ groups:
   exits:
     members: [ roma-exit01, roma-exit02 ]
     module: [ bgp, vxlan, vlan, vrf, evpn ]
-    config: [ eos-activate-evpn.j2 ]
+    config: [ eos-activate-evpn.j2, route-map.j2 ]
     vrfs:
       tenant:
         loopback: true
+      internet:
+        loopback: true
+
+  dcedge:
+    members: [ roma-dcedge01 ]
+    module: [ bgp ]
     
   hosts:
     members: [ srv101, srv102, srv201, srv202 ]
@@ -56,7 +62,10 @@ vrfs:
     evpn:
       transit_vni: 50000
     bgp: False
-  
+
+  internet:
+
+    
 vlans:
   red:
     vrf: tenant                                  # Assign to VRF
@@ -75,6 +84,11 @@ vlans:
     prefix.ipv4: 172.16.30.0/24                   # IPv4 subnet
     prefix.ipv6: 2001:db8:30::/64
     gateway: true                                # Enable gateway on this VLAN
+
+nodes:
+  roma-dcedge01:
+    bgp:
+      as: 65534
 
 links:
 
@@ -156,6 +170,21 @@ links:
   roma-spine02:
     bgp.local_as: 65200
 
+# Connection to DC edge
+- roma-exit01:
+    vrf: internet
+    bgp:
+      local_as: 65111
+      advertise: true
+  roma-dcedge01:
+    
+- roma-exit02:
+    bgp:
+      local_as: 65111
+      advertise: true
+    vrf: internet
+  roma-dcedge01:
+    
 # MLAG peerlinks
 - lag:
     members:
