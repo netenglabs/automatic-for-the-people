@@ -35,3 +35,5 @@ evpn_peers:
   - 10.0.0.14
   - 10.0.0.31
   - 10.0.0.32
+
+ansible_password: vagrant
