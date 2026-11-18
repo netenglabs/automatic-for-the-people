@@ -439,10 +439,24 @@ Vagrant.configure("2") do |config|
       node.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
 
       node.vm.provider :libvirt do |v|
-      	v.nic_model_type = 'e1000' 
+      	v.nic_model_type = 'e1000'
         v.memory = 512
       end
-        
+
+      # generic/ubuntu2004 hardcodes DNS to 4.2.2.1/4.2.2.2 (unreachable from
+      # the lab) with DNSSEC on, which breaks the FRR repo download. Use the
+      # libvirt mgmt-network gateway (DHCP-provided) and 8.8.8.8 instead.
+      node.vm.provision "fix-dns", type: "shell", inline: <<-SHELL
+        GW=$(ip route show default | awk '{print $3; exit}')
+        sed -i -e "s/^#\\?DNS=.*/DNS=${GW} 8.8.8.8/" -e "s/^#\\?DNSSEC=.*/DNSSEC=no/" /etc/systemd/resolved.conf
+        sed -i "s/addresses: \\[4.2.2.1, 4.2.2.2, 208.67.220.220\\]/addresses: [${GW}, 8.8.8.8]/" /etc/netplan/01-netcfg.yaml
+        systemctl restart systemd-resolved
+        # Apply to the live link without 'netplan apply', which bounces eth0
+        # and kills vagrant's SSH session; the netplan edit covers reboots.
+        resolvectl dns eth0 ${GW} 8.8.8.8
+        resolvectl dnssec eth0 no
+      SHELL
+
       (1..NUM_EXIT_LEAVES).each do |id|
         node.vm.network :private_network,
                         :libvirt__tunnel_type => "udp",
