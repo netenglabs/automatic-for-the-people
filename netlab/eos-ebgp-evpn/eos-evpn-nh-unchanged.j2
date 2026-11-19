@@ -1,0 +1,12 @@
+!
+! EBGP EVPN on spines: propagate EVPN routes without changing the BGP next hop
+! (netlab doesn't generate this for EOS; EVPN AF activation itself is done by netlab)
+!
+{% if bgp is defined and bgp.neighbors is defined %}
+router bgp {{ bgp.as }}
+   address-family evpn
+{%   for n in bgp.neighbors if n.multihop is defined and n.ipv6 is defined %}
+      neighbor {{ n.ipv6 }} next-hop-unchanged
+{%   endfor %}
+!
+{% endif %}
